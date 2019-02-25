@@ -10,10 +10,14 @@
   },
   "dependencies": {
     "agora-electron-sdk": "^2.0.8-rc.5",
-    "bulma": "^0.7.1",
+    "bootstrap": "^4.3.1",
+    "bootstrap-material-design": "^4.1.1",
+    "bulma": "^0.7.4",
     "immutable": "^3.8.2",
+    "jquery": "^3.3.1",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "shortid": "^2.2.14",
     "source-map-support": "^0.5.9"
   },
   "devDependencies": {
@@ -21,7 +25,7 @@
     "@babel/preset-react": "^7.0.0",
     "electron": "^4.0.0",
     "electron-builder": "^20.28.3",
-    "electron-webpack": "^2.3.1",
+    "electron-webpack": "^2.6.1",
     "webpack": "^4.17.1"
   },
   "resolutions": {

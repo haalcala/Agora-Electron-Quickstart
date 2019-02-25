@@ -63,3 +63,6 @@ app.on('activate', () => {
 app.on('ready', () => {
   mainWindow = createMainWindow()
 })
+
+console.log("*************************************************************** Hello!!!!!!!!!!!!!!!!!!!!");
+
