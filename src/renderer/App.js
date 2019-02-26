@@ -192,7 +192,7 @@ export default class App extends Component {
 			totalVolume
 			) => {
 			// console.log("this.rtcEngine.on('audiovolumeindication')::");
-			console.log(`uid${uid} volume${volume} speakerNumber${speakerNumber} totalVolume${totalVolume}`)
+			// console.log(`uid${uid} volume${volume} speakerNumber${speakerNumber} totalVolume${totalVolume}`)
 		});
 		this.rtcEngine.on('error', err => {
 			console.log("this.rtcEngine.on('error')::");
