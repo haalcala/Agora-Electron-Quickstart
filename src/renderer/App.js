@@ -80,12 +80,12 @@ export default class App extends Component {
         console.log('signal', signal);
 
         signal.sessionEmitter.on('onMessageInstantReceive', (account, uid, msg) => {
-            console.log('signal.sessionEmitter.on(\'onMessageInstantReceive\'::');
+            console.log('signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
             
             // this.onReceiveMessage(account, msg, 'instant');
         });
         signal.channelEmitter.on('onMessageChannelReceive', (account, uid, msg) => {
-            console.log('signal.channelEmitter.on(\'onMessageChannelReceive\'::');
+            console.log('signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
             
             // if (account !== signal.account) {
             //     this.onReceiveMessage(signal.channel.name, msg, 'channel');
@@ -93,7 +93,7 @@ export default class App extends Component {
         });
     
         signal.channelEmitter.on('onChannelUserLeaved', (account, uid) => {
-            console.log('signal.channelEmitter.on(\'onChannelUserLeaved\'::');
+            console.log('signal.channelEmitter.on(\'onChannelUserLeaved\':: account, uid', account, uid);
 
             
             
@@ -107,7 +107,7 @@ export default class App extends Component {
         });
     
         signal.channelEmitter.on('onChannelUserJoined', (account, uid) => {
-            console.log('signal.channelEmitter.on(\'onChannelUserJoined\'::');
+            console.log('signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
             
             // client.invoke(
             //     'io.agora.signal.channel_query_num',
