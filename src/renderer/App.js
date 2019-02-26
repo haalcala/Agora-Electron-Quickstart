@@ -81,12 +81,12 @@ export default class App extends Component {
         console.log('signal', signal);
 
         signal.sessionEmitter.on('onMessageInstantReceive', (account, uid, msg) => {
-            console.log('signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
+            console.log('---===>>> signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
             
             // this.onReceiveMessage(account, msg, 'instant');
         });
         signal.channelEmitter.on('onMessageChannelReceive', (account, uid, msg) => {
-            console.log('signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
+            console.log('---===>>> signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
             
             // if (account !== signal.account) {
             //     this.onReceiveMessage(signal.channel.name, msg, 'channel');
@@ -94,7 +94,7 @@ export default class App extends Component {
         });
     
         signal.channelEmitter.on('onChannelUserLeaved', (account, uid) => {
-            console.log('signal.channelEmitter.on(\'onChannelUserLeaved\':: account, uid', account, uid);
+            console.log('---===>>> signal.channelEmitter.on(\'onChannelUserLeaved\':: account, uid', account, uid);
 
             
             
@@ -108,7 +108,7 @@ export default class App extends Component {
         });
     
         signal.channelEmitter.on('onChannelUserJoined', async (account, uid) => {
-            console.log('signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
+            console.log('---===>>> signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
 
             const {state} = this;
             const {game_status} = state;
@@ -136,7 +136,7 @@ export default class App extends Component {
         });
 
         signal.channelEmitter.on('onChannelAttrUpdated', (...args) => {
-            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: ...args', ...args);
+            console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: ...args', ...args);
             
             // client.invoke(
             //     'io.agora.signal.channel_query_num',
@@ -148,11 +148,11 @@ export default class App extends Component {
         });
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
-            console.log("this.rtcEngine.on('joinedchannel'):: channel, uid, elapsed", channel, uid, elapsed);
+            console.log('---===>>> this.rtcEngine.on(\'joinedchannel\'):: channel, uid, elapsed', channel, uid, elapsed);
             
             let dom = document.querySelector(`#video-host`);
             
-            console.log('dom', dom);
+            console.log('---===>>> dom', dom);
             
             dom && this.rtcEngine.setupLocalVideo(dom);
 
@@ -161,23 +161,25 @@ export default class App extends Component {
             });
 		});
 		this.rtcEngine.on('userjoined', (uid, elapsed) => {
-			console.log("this.rtcEngine.on('userjoined'):: uid, elapsed", uid, elapsed);
+			console.log('---===>>> this.rtcEngine.on(\'userjoined\'):: uid, elapsed', uid, elapsed);
 			if (uid === SHARE_ID && this.state.localVideoSource) {
 				return
 			}
-			this.rtcEngine.setRemoteVideoStreamType(uid, 1)
+            
+            this.rtcEngine.setRemoteVideoStreamType(uid, 1);
+            
 			this.setState({
 				users: this.state.users.push(uid)
 			});
 		});
 		this.rtcEngine.on('removestream', (uid, reason) => {
-			console.log("this.rtcEngine.on('removestream'):: uid, reason", uid, reason);
+			console.log('---===>>> this.rtcEngine.on(\'removestream\'):: uid, reason', uid, reason);
 			this.setState({
 				users: this.state.users.delete(this.state.users.indexOf(uid))
 			});
 		});
 		this.rtcEngine.on('leavechannel', () => {
-            console.log("this.rtcEngine.on('leavechannel')::");
+            console.log('---===>>> this.rtcEngine.on(\'leavechannel\')::');
             
             const new_state = {
                 local: '', localVideoSource: '',
@@ -185,12 +187,12 @@ export default class App extends Component {
                 videos_on: []
             };
 
-            console.log('new_state', new_state);
+            console.log('---===>>> new_state', new_state);
 
 			this.setState(new_state);
 		});
 		this.rtcEngine.on('audiodevicestatechanged', () => {
-			console.log("this.rtcEngine.on('audiodevicestatechanged')::");
+			console.log('---===>>> this.rtcEngine.on(\'audiodevicestatechanged\')::');
 			this.setState({
                 audioDevices: this.rtcEngine.getAudioRecordingDevices(),
                 audioPlaybackDevices: this.rtcEngine.getAudioPlaybackDevices()
@@ -212,11 +214,11 @@ export default class App extends Component {
 			// console.log(`uid${uid} volume${volume} speakerNumber${speakerNumber} totalVolume${totalVolume}`)
 		});
 		this.rtcEngine.on('error', err => {
-			console.log("this.rtcEngine.on('error')::");
+			console.log('---===>>> this.rtcEngine.on(\'error\')::');
 			console.error(err)
 		});
 		this.rtcEngine.on('executefailed', funcName => {
-			console.log("this.rtcEngine.on('executefailed')::");
+			console.log('this.rtcEngine.on(\'executefailed\')::');
 			console.error(funcName, 'failed to execute')
 		});
 	}
@@ -442,7 +444,7 @@ export default class App extends Component {
         else if (quizRole == QUIZ_ROLE_PLAYER) {
             await this.joinGame();
 
-            // this.handleJoin();
+            this.handleJoin();
         }
         else {
             console.log('ERROR: Unknown quizRole', quizRole);
