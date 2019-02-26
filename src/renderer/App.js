@@ -107,15 +107,22 @@ export default class App extends Component {
             // );
         });
     
-        signal.channelEmitter.on('onChannelUserJoined', (account, uid) => {
+        signal.channelEmitter.on('onChannelUserJoined', async (account, uid) => {
             console.log('signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
 
             const {state} = this;
             const {game_status} = state;
 
-            if (state.quizRole === QUIZ_ROLE_HOST) {
+            if (game_status.host === PLAYER_ID) {
                 if (game_status.status === GAME_STATUS_WAIT_FOR_PLAYERS) {
+                    let next_player;
+                    _.times(3).map(i => {
+                        if (!next_player && !state['player'+(i + 1)+'_player_id']) {
+                            next_player = game_status['player'+(i + 1)+'_player_id'] = state['player'+(i + 1)+'_player_id'] = account;
+                        }
+                    });
 
+                    await this.setGameStatus();
                 }
             }
             
