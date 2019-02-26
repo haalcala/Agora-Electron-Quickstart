@@ -49,7 +49,8 @@ export default class App extends Component {
                 showWindowPicker: false,
                 recordingTestOn: false,
                 playbackTestOn: false,
-                windowList: []
+                windowList: [],
+                videos_on : []
 			}
 		}
         this.enableAudioMixing = false;
@@ -130,16 +131,17 @@ export default class App extends Component {
         });
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
-			console.log("this.rtcEngine.on('joinedchannel'):: channel, uid, elapsed", channel, uid, elapsed);
-			this.setState({
-			    local: uid
-            });
+            console.log("this.rtcEngine.on('joinedchannel'):: channel, uid, elapsed", channel, uid, elapsed);
             
             let dom = document.querySelector(`#video-host`);
-
+            
             console.log('dom', dom);
+            
+            dom && this.rtcEngine.setupLocalVideo(dom);
 
-            dom && this.rtcEngine.setupLocalVideo(dom)
+            this.setState({
+                local: uid, videos_on: this.state.videos_on.concat([QUIZ_ROLE_HOST])
+            });
 		});
 		this.rtcEngine.on('userjoined', (uid, elapsed) => {
 			console.log("this.rtcEngine.on('userjoined'):: uid, elapsed", uid, elapsed);
@@ -158,11 +160,17 @@ export default class App extends Component {
 			});
 		});
 		this.rtcEngine.on('leavechannel', () => {
-			console.log("this.rtcEngine.on('leavechannel')::");
-			this.setState({
+            console.log("this.rtcEngine.on('leavechannel')::");
+            
+            const new_state = {
                 local: '', localVideoSource: '',
-                users: this.state.users.splice(0)
-			});
+                users: this.state.users.splice(0),
+                videos_on: []
+            };
+
+            console.log('new_state', new_state);
+
+			this.setState(new_state);
 		});
 		this.rtcEngine.on('audiodevicestatechanged', () => {
 			console.log("this.rtcEngine.on('audiodevicestatechanged')::");
@@ -215,9 +223,9 @@ export default class App extends Component {
 		//	 console,log(err)
         //	 })
         
-        console.log("Joining chanel", this.state.channel);
+        console.log("Joining chanel", GAME_ID);
 
-        rtcEngine.joinChannel(null, this.state.channel, '',	Number(`${new Date().getTime()}`.slice(7)));
+        rtcEngine.joinChannel(null, GAME_ID, '',	Number(`${new Date().getTime()}`.slice(7)));
         
         // if (!signal.joined) {
         //     console.log('signal', signal);
@@ -402,6 +410,8 @@ export default class App extends Component {
         }
 
         if (state.quizIsOn) {
+            this.handleLeave();
+            
             return this.setState({quizIsOn: false});
         }
 
@@ -409,6 +419,8 @@ export default class App extends Component {
 
         if (quizRole == "host") {
             await this.startNewGame();
+
+            this.handleJoin();
         }
         else {
             console.log('ERROR: Unknown quizRole', quizRole);
@@ -550,24 +562,27 @@ export default class App extends Component {
     }
 
     render() {
+        const {state} = this;
+
 		let windowPicker
 
-		if (this.state.showWindowPicker) {
+		if (state.showWindowPicker) {
 			windowPicker = <WindowPicker
 			onSubmit={this.handleWindowPicker}
 			onCancel={e => this.setState({showWindowPicker: false})}
-			windowList={this.state.windowList}
+			windowList={state.windowList}
 			/>
         }
         
-        console.log('this.state.users', this.state.users);
+        console.log('state', state);
+        console.log('state.users', state.users);
         
         console.log('require(\'../player.jpg\')', require('../player.jpg'))
 
 		return (
 			<div className="columns" style={{padding: "20px", height: '100%', margin: '0'}}>
 
-            { this.state.showWindowPicker ? windowPicker : '' }
+            { state.showWindowPicker ? windowPicker : '' }
 
             
 			<div className="column is-one-quarter" style={{overflowY: 'auto'}}>
@@ -575,8 +590,8 @@ export default class App extends Component {
 				<label className="label">Game ID</label>
 				<div className="control">
                     {
-                        !this.state.quizIsOn ? (
-                            <input onChange={e => this.setState({GAME_ID: e.currentTarget.value})} value={this.state.GAME_ID} className="input" type="text" placeholder="Input a channel name" />
+                        !state.quizIsOn ? (
+                            <input onChange={e => this.setState({GAME_ID: e.currentTarget.value})} value={state.GAME_ID} className="input" type="text" placeholder="Input a channel name" />
                         ) : GAME_ID
                     }
 				</div>
@@ -585,7 +600,7 @@ export default class App extends Component {
 				<label className="label">Role</label>
 				<div className="control">
 					<div className="select"	style={{width: '100%'}}>
-					<select onChange={e => this.setState({role: Number(e.currentTarget.value)})} value={this.state.role} style={{width: '100%'}}>
+					<select onChange={e => this.setState({role: Number(e.currentTarget.value)})} value={state.role} style={{width: '100%'}}>
 						<option value={1}>Anchor</option>
 						<option value={2}>Audience</option>
 					</select>
@@ -596,7 +611,7 @@ export default class App extends Component {
 				<label className="label">VideoProfile</label>
 				<div className="control">
 					<div className="select"	style={{width: '100%'}}>
-					<select onChange={this.handleVideoProfile} value={this.state.videoProfile} style={{width: '100%'}}>
+					<select onChange={this.handleVideoProfile} value={state.videoProfile} style={{width: '100%'}}>
 						{videoProfileList.map(item => (<option key={item.value} value={item.value}>{item.label}</option>))}
 					</select>
 					</div>
@@ -606,12 +621,12 @@ export default class App extends Component {
 				<label className="label">AudioProfile</label>
 				<div className="control">
 					<div className="select"	style={{width: '50%'}}>
-					<select onChange={this.handleAudioProfile} value={this.state.audioProfile} style={{width: '100%'}}>
+					<select onChange={this.handleAudioProfile} value={state.audioProfile} style={{width: '100%'}}>
 						{audioProfileList.map(item => (<option key={item.value} value={item.value}>{item.label}</option>))}
 					</select>
 					</div>
 					<div className="select"	style={{width: '50%'}}>
-					<select onChange={this.handleAudioScenario} value={this.state.audioScenario} style={{width: '100%'}}>
+					<select onChange={this.handleAudioScenario} value={state.audioScenario} style={{width: '100%'}}>
 						{audioScenarioList.map(item => (<option key={item.value} value={item.value}>{item.label}</option>))}
 					</select>
 					</div>
@@ -621,8 +636,8 @@ export default class App extends Component {
 				<label className="label">Camera</label>
 				<div className="control">
 					<div className="select"	style={{width: '100%'}}>
-					<select onChange={this.handleCameraChange} value={this.state.camera} style={{width: '100%'}}>
-						{this.state.videoDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
+					<select onChange={this.handleCameraChange} value={state.camera} style={{width: '100%'}}>
+						{state.videoDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
 					</select>
 					</div>
 				</div>
@@ -631,8 +646,8 @@ export default class App extends Component {
 				<label className="label">Microphone</label>
 				<div className="control">
 					<div className="select"	style={{width: '100%'}}>
-					<select onChange={this.handleMicChange} value={this.state.mic} style={{width: '100%'}}>
-						{this.state.audioDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
+					<select onChange={this.handleMicChange} value={state.mic} style={{width: '100%'}}>
+						{state.audioDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
 					</select>
 					</div>
 				</div>
@@ -641,8 +656,8 @@ export default class App extends Component {
 				<label className="label">Loudspeaker</label>
 				<div className="control">
 					<div className="select"	style={{width: '100%'}}>
-					<select onChange={this.handleSpeakerChange} value={this.state.speaker} style={{width: '100%'}}>
-						{this.state.audioPlaybackDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
+					<select onChange={this.handleSpeakerChange} value={state.speaker} style={{width: '100%'}}>
+						{state.audioPlaybackDevices.map((item, index) => (<option key={index} value={index}>{item.devicename}</option>))}
 					</select>
 					</div>
 				</div>
@@ -669,31 +684,31 @@ export default class App extends Component {
 				<div className="field">
 				<label className="label">Audio Playback Test</label>
 				<div className="control">
-					<button onClick={this.togglePlaybackTest} className="button is-link">{this.state.playbackTestOn ? 'stop' : 'start'}</button>
+					<button onClick={this.togglePlaybackTest} className="button is-link">{state.playbackTestOn ? 'stop' : 'start'}</button>
 				</div>
 				</div>
 				<div className="field">
                     <label className="label">Audio Recording Test</label>
                     <div className="control">
-                        <button onClick={this.toggleRecordingTest} className="button is-link">{this.state.recordingTestOn ? 'stop' : 'start'}</button>
+                        <button onClick={this.toggleRecordingTest} className="button is-link">{state.recordingTestOn ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 				<div className="field">
                     <label className="label">Host Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!this.state.quizIsOn || this.state.quizRole == 'host') && ' is-link' || '')}>{this.state.quizIsOn && this.state.quizRole == 'host' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'host') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'host' ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 				<div className="field">
                     <label className="label">Answer Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!this.state.quizIsOn || this.state.quizRole == 'participant') && ' is-link' || '')}>{this.state.quizIsOn && this.state.quizRole == 'participant' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'participant') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'participant' ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 				<div className="field">
                     <label className="label">Watch Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(audience)} id="audience-button" className={"button " + ((!this.state.quizIsOn || this.state.quizRole == 'audience') && ' is-link' || '')}>{this.state.quizIsOn && this.state.quizRole == 'audience' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(audience)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'audience') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'audience' ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 			</div>
@@ -704,18 +719,18 @@ export default class App extends Component {
                                 this is a question panel
                             </div>
                         </div>
-                        {this.state.quizIsOn ? (
+                        {state.quizIsOn ? (
                             <div className="tile is-child" style={{border: "1px dashed blue", display: "contents"}}>
                                 <div className="container box" style={{padding: ".2rem", border: "1px solid black"}}>
                                     <div style={{height: "250px", overflow: "hidden", padding: "3px", animationName: "example", animationDuration: "1s"}}>
                                         <div className="column is-three-quarters window-container" style={{columnGap: ".1rem"}}>
                                             {['host', 'player1', 'player2', 'player3'].map((item, key) => (
-                                                <Window harold_trace="1111" key={key} uid={item} rtcEngine={this.rtcEngine} role={item===SHARE_ID?'remoteVideoSource':'remote'}></Window>
+                                                <Window harold_trace="1111" key={key} uid={item} rtcEngine={this.rtcEngine} show_icon={state.videos_on.indexOf(item) == -1} role={item===SHARE_ID?'remoteVideoSource':'remote'}></Window>
                                             ))}
                                             
-                                            {/* {this.state.local ? (<Window harold_trace="2222" uid={this.state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
+                                            {/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
-                                            {/* {this.state.localVideoSource ? (<Window harold_trace="3333" uid={this.state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
+                                            {/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
 
                                         </div>
                                     </div>
@@ -763,8 +778,8 @@ class Window extends Component {
 	render() {
 		return (
 			<div className="window-item box" style={{padding: ".2rem", border: "1px solid red"}} haa-trace={this.props.harold_trace}>
-			<div className="video-item is-fluid" id={'video-' + this.props.uid}><img style={{verticalAlign: "middle", height: "100%"}} src={require('../player.jpg')}/></div>
-                
+                <img className="player-icon" style={{verticalAlign: "middle", marginLeft: "auto", marginRight: "auto", display: (this.props.show_icon ? "block" : "none")}} src={require('../player.jpg')}/>
+			    <div className="video-item is-fluid" id={'video-' + this.props.uid} style={{display: (!this.props.show_icon ? "block" : "none")}}></div>
 			</div>
 		)
 	}

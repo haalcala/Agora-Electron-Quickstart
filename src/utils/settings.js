@@ -1,4 +1,4 @@
-export const APP_ID = ''
+export const APP_ID = '9cdc17cf285a4174a7c36f02d925e641'
 export const SHARE_ID = 2
 export const videoProfileList = [
   {
