@@ -587,6 +587,14 @@ export default class App extends Component {
             
 			<div className="column is-one-quarter" style={{overflowY: 'auto'}}>
 				<div className="field">
+				<label className="label">Player ID</label>
+				<div className="control">
+                    {
+                        PLAYER_ID
+                    }
+				</div>
+				</div>
+				<div className="field">
 				<label className="label">Game ID</label>
 				<div className="control">
                     {
@@ -696,19 +704,19 @@ export default class App extends Component {
 				<div className="field">
                     <label className="label">Host Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'host') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'host' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 				<div className="field">
                     <label className="label">Answer Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'participant') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'participant' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_PLAYER) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_PLAYER ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 				<div className="field">
                     <label className="label">Watch Quiz</label>
                     <div className="control">
-                        <button onClick={e => this.startQuiz(audience)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == 'audience') && ' is-link' || '')}>{state.quizIsOn && state.quizRole == 'audience' ? 'stop' : 'start'}</button>
+                        <button onClick={e => this.startQuiz(audience)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_AUDIENCE) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_AUDIENCE ? 'stop' : 'start'}</button>
                     </div>
 				</div>
 			</div>
