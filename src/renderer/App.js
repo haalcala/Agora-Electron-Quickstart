@@ -23,7 +23,7 @@ const [GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _
 
 let GAME_ID;
 
-console.log('PLAYER_ID', PLAYER_ID)
+console.log('PLAYER_ID', PLAYER_ID, 'GAME_STATUS_WAIT_FOR_PLAYERS', GAME_STATUS_WAIT_FOR_PLAYERS, 'GAME_STATUS_STARTED', GAME_STATUS_STARTED, 'GAME_STATUS_ENDED', GAME_STATUS_ENDED);
 
 export default class App extends Component {
 	constructor(props) {
@@ -37,7 +37,7 @@ export default class App extends Component {
                 local: '',
                 localVideoSource: '',
                 users: new List(),
-                channel: 'aaaa',
+                GAME_ID,
                 role: 1,
                 videoDevices: this.rtcEngine.getVideoDevices(),
                 audioDevices: this.rtcEngine.getAudioRecordingDevices(),
@@ -50,7 +50,8 @@ export default class App extends Component {
                 recordingTestOn: false,
                 playbackTestOn: false,
                 windowList: [],
-                videos_on : []
+                videos_on : [],
+                game_status : {}
 			}
 		}
         this.enableAudioMixing = false;
@@ -108,6 +109,15 @@ export default class App extends Component {
     
         signal.channelEmitter.on('onChannelUserJoined', (account, uid) => {
             console.log('signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
+
+            const {state} = this;
+            const {game_status} = state;
+
+            if (state.quizRole === QUIZ_ROLE_HOST) {
+                if (game_status.status === GAME_STATUS_WAIT_FOR_PLAYERS) {
+
+                }
+            }
             
             // client.invoke(
             //     'io.agora.signal.channel_query_num',
@@ -205,16 +215,16 @@ export default class App extends Component {
 	}
 
 	handleJoin = () => {
-        let {rtcEngine, signal} = this; 
+        let {rtcEngine, signal, state} = this; 
         
 		rtcEngine.setChannelProfile(1)
-		rtcEngine.setClientRole(this.state.role)
+		rtcEngine.setClientRole(state.role)
 		rtcEngine.setAudioProfile(0, 1)
 		rtcEngine.enableVideo()
 		rtcEngine.setLogFile('~/agoraabc.log')
 		rtcEngine.enableLocalVideo(true)
 		rtcEngine.enableWebSdkInteroperability(true)
-		rtcEngine.setVideoProfile(this.state.videoProfile, false)
+		rtcEngine.setVideoProfile(state.videoProfile, false)
 		rtcEngine.enableDualStreamMode(true)
 		rtcEngine.enableAudioVolumeIndication(1000, 3)
 		// rtcEngine.enableDualStream(function() {
@@ -230,8 +240,8 @@ export default class App extends Component {
         // if (!signal.joined) {
         //     console.log('signal', signal);
 
-        //     signal.join(this.state.channel).then(() => {
-        //         signal.invoke('io.agora.signal.channel_query_userlist', {name: this.state.channel}, (err, result) => {
+        //     signal.join(state.channel).then(() => {
+        //         signal.invoke('io.agora.signal.channel_query_userlist', {name: state.channel}, (err, result) => {
 
         //         });    
         //     });
@@ -411,24 +421,41 @@ export default class App extends Component {
 
         if (state.quizIsOn) {
             this.handleLeave();
-            
+
             return this.setState({quizIsOn: false});
         }
 
         console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
 
-        if (quizRole == "host") {
+        if (quizRole == QUIZ_ROLE_HOST) {
             await this.startNewGame();
 
             this.handleJoin();
+        }
+        else if (quizRole == QUIZ_ROLE_PLAYER) {
+            await this.joinGame();
+
+            // this.handleJoin();
         }
         else {
             console.log('ERROR: Unknown quizRole', quizRole);
         }
     }
 
+    setGameStatus = async () => {
+        const {state, signal} = this;
+
+        const {game_status} = state;
+
+        let result = await signal.invoke('io.agora.signal.channel_set_attr', {channel: GAME_ID, name: 'game_status', value: JSON.stringify(game_status)});
+
+        console.log('2222 result', result);
+    };
+
     startNewGame = async () => {        
         const {state, signal} = this;
+
+        const {game_status} = state;
 
         GAME_ID = shortid.generate();
 
@@ -443,21 +470,53 @@ export default class App extends Component {
         console.log('1111 result', result)
 
         if (result.list && result.list.length === 1 && result.list[0][0] === PLAYER_ID) {
+            state.channel = channel;
+
+            game_status.status = GAME_STATUS_WAIT_FOR_PLAYERS;
+            game_status.host = PLAYER_ID;
+            game_status.player1_player_id = state.player1_player_id;
+            game_status.player2_player_id = state.player2_player_id;
+            game_status.player3_player_id = state.player3_player_id;
+
             console.log('Created a new game successfully.');
 
-            let result = await signal.invoke('io.agora.signal.channel_set_attr', {channel: GAME_ID, name: 'game_host', value: PLAYER_ID});
+            await this.setGameStatus();
 
-            console.log('2222 result', result);
+            // await signal.invoke('io.agora.signal.user_set_attr', {name: "GAME_ID" + account, value: GAME_ID});
+            // await signal.invoke('io.agora.signal.user_set_attr', {name: "PLAYER_ID" + account, value: PLAYER_ID});
+            // await signal.invoke('io.agora.signal.user_set_attr', {name: "HOST_PLAYER_ID" + account, value: PLAYER_ID});
 
-            result = await signal.invoke('io.agora.signal.channel_set_attr', {channel: GAME_ID, name: 'game_status', value: GAME_STATUS_WAIT_FOR_PLAYERS});
 
-            console.log('3333 result', result);
 
             this.setState({quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel});
         }
         else {
             console.log('ERROR: Channel', GAME_ID, 'is not empty or owned by someone else.');
         }
+    }
+
+    joinGame = async () => {
+        const{state, signal} = this;
+
+        GAME_ID = state.GAME_ID;
+
+        if (!GAME_ID) {
+            console.log("ERROR:: Required GAME_ID missing");
+
+            return;
+        }
+
+        const channel =  await signal.join(GAME_ID); 
+
+        console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
+
+        // channel.
+        
+        let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+
+        console.log('1111 result', result);
+
+        this.setState({quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID, channel});
     }
 
     showQuestion = () => {
