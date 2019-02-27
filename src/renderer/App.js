@@ -136,8 +136,8 @@ export default class App extends Component {
                     let next_player;
 
                     _.times(3).map(i => {
-                        if (!next_player && !state['player'+(i + 1)+'_player_id']) {
-                            next_player = game_status['player'+(i + 1)+'_player_id'] = state['player'+(i + 1)+'_player_id'] = account;
+                        if (!next_player && !game_status['player'+(i + 1)+'_player_id']) {
+                            next_player = game_status['player'+(i + 1)+'_player_id'] = account;
                         }
                     });
 
@@ -222,9 +222,6 @@ export default class App extends Component {
                 state.game_status.host_player_id = PLAYER_ID;
 
                 this.setupVideoPanels();
-            }
-            else {
-                
             }
         });
         
@@ -316,7 +313,7 @@ export default class App extends Component {
                         rtcEngine.setupLocalVideo(dom);
                     }
                     else {
-                        rtcEngine.subscribe(game_status[`${game_role}_video_stream_id`], dom);
+                        rtcEngine.subscribe(parseInt(game_status[`${game_role}_video_stream_id`]), dom);
                     }
 
                     state[`${game_role}_video_stream_id`] = 1;
