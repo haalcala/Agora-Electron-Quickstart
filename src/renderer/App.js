@@ -231,8 +231,6 @@ export default class App extends Component {
 				return
 			}
             
-            this.rtcEngine.setRemoteVideoStreamType(uid, 1);
-            
 			this.setState({
 				users: this.state.users.push(uid)
 			});
@@ -309,11 +307,13 @@ export default class App extends Component {
                 console.log('game_status[`${game_role}_video_stream_id`]', game_status[`${game_role}_video_stream_id`]);
                 
                 if (dom && game_status[`${game_role}_video_stream_id`]) {
-                    if (game_status[`${game_role}_video_stream_id`] === state.video_stream_id) {
+                    const uid = parseInt(game_status[`${game_role}_video_stream_id`]);
+                    if (uid === state.video_stream_id) {
                         rtcEngine.setupLocalVideo(dom);
                     }
                     else {
-                        rtcEngine.subscribe(parseInt(game_status[`${game_role}_video_stream_id`]), dom);
+                        rtcEngine.subscribe(uid, dom);
+                        rtcEngine.setRemoteVideoStreamType(uid, 1);            
                     }
 
                     state[`${game_role}_video_stream_id`] = 1;
