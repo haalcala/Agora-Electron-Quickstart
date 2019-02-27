@@ -174,6 +174,7 @@ export default class App extends Component {
 
             if (state.quizRole === QUIZ_ROLE_HOST) {
                 state.game_status.host_video_stream_id = uid;
+                state.game_status.host_player_id = PLAYER_ID;
 
                 this.setupVideoPanels();
             }
