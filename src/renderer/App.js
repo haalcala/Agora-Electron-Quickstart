@@ -135,9 +135,27 @@ export default class App extends Component {
             // );
         });
 
-        signal.channelEmitter.on('onChannelAttrUpdated', (...args) => {
-            console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: ...args', ...args);
+        signal.channelEmitter.on('onChannelAttrUpdated', (key, val, ...args) => {
+            console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: key, val, ...args', key, val, ...args);
             
+            const {state} = this;
+
+            if (key === 'game_status') {
+                const game_status = val = JSON.parse(val);
+
+                state.game_status = game_status;
+
+                ['host', 'player1', 'player2', 'player3'].map(async game_role => {
+                    if (game_status[game_role + '_player_id'] == PLAYER_ID) {
+                        if (!game_status[game_role + '_video_stream_id']) {
+                            await this.setChannelAttribute('video_steram_id', [game_role, state.video_stream_id].join(','))
+                        }
+                    }
+                });
+
+                this.setupVideoPanels();
+            }
+
             // client.invoke(
             //     'io.agora.signal.channel_query_num',
             //     { name: signal.channel.name },
@@ -148,18 +166,19 @@ export default class App extends Component {
         });
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
-            console.log('---===>>> this.rtcEngine.on(\'joinedchannel\'):: channel, uid, elapsed', channel, uid, elapsed);
-            
-            let dom = document.querySelector(`#video-host`);
-            
-            console.log('---===>>> dom', dom);
-            
-            dom && this.rtcEngine.setupLocalVideo(dom);
+            const {state} = this;
 
-            this.setState({
-                local: uid, videos_on: this.state.videos_on.concat([QUIZ_ROLE_HOST])
-            });
-		});
+            console.log('---===>>> this.rtcEngine.on(\'joinedchannel\'):: channel, uid, elapsed', channel, uid, elapsed);
+
+            state.video_stream_id = uid;
+
+            if (state.quizRole === QUIZ_ROLE_HOST) {
+                state.game_status.host_video_stream_id = uid;
+
+                this.setupVideoPanels();
+            }
+        });
+        
 		this.rtcEngine.on('userjoined', (uid, elapsed) => {
 			console.log('---===>>> this.rtcEngine.on(\'userjoined\'):: uid, elapsed', uid, elapsed);
 			if (uid === SHARE_ID && this.state.localVideoSource) {
@@ -171,13 +190,15 @@ export default class App extends Component {
 			this.setState({
 				users: this.state.users.push(uid)
 			});
-		});
+        });
+        
 		this.rtcEngine.on('removestream', (uid, reason) => {
 			console.log('---===>>> this.rtcEngine.on(\'removestream\'):: uid, reason', uid, reason);
 			this.setState({
 				users: this.state.users.delete(this.state.users.indexOf(uid))
 			});
-		});
+        });
+        
 		this.rtcEngine.on('leavechannel', () => {
             console.log('---===>>> this.rtcEngine.on(\'leavechannel\')::');
             
@@ -190,20 +211,25 @@ export default class App extends Component {
             console.log('---===>>> new_state', new_state);
 
 			this.setState(new_state);
-		});
+        });
+        
 		this.rtcEngine.on('audiodevicestatechanged', () => {
-			console.log('---===>>> this.rtcEngine.on(\'audiodevicestatechanged\')::');
+            console.log('---===>>> this.rtcEngine.on(\'audiodevicestatechanged\')::');
+            
 			this.setState({
                 audioDevices: this.rtcEngine.getAudioRecordingDevices(),
                 audioPlaybackDevices: this.rtcEngine.getAudioPlaybackDevices()
 			});
-		});
+        });
+        
 		this.rtcEngine.on('videodevicestatechanged', () => {
-			console.log("this.rtcEngine.on('videodevicestatechanged')::");
+            console.log("this.rtcEngine.on('videodevicestatechanged')::");
+            
 			this.setState({
 			    videoDevices: this.rtcEngine.getVideoDevices()
 			});
-		});
+        });
+        
 		this.rtcEngine.on('audiovolumeindication', (
 			uid,
 			volume,
@@ -212,16 +238,40 @@ export default class App extends Component {
 			) => {
 			// console.log("this.rtcEngine.on('audiovolumeindication')::");
 			// console.log(`uid${uid} volume${volume} speakerNumber${speakerNumber} totalVolume${totalVolume}`)
-		});
+        });
+        
 		this.rtcEngine.on('error', err => {
 			console.log('---===>>> this.rtcEngine.on(\'error\')::');
 			console.error(err)
-		});
+        });
+        
 		this.rtcEngine.on('executefailed', funcName => {
 			console.log('this.rtcEngine.on(\'executefailed\')::');
 			console.error(funcName, 'failed to execute')
 		});
-	}
+    }
+    
+    setupVideoPanels = () => {
+        let {rtcEngine, signal, state} = this; 
+
+        ['host', 'player1', 'player2', 'player3'].map(key => {
+
+        })
+
+        let dom = document.querySelector(`#video-host`);
+            
+        console.log('---===>>> dom', dom);
+        
+        dom && rtcEngine.setupLocalVideo(dom);
+
+        const new_state = {
+            local: state.video_stream_id, videos_on: state.videos_on.concat([QUIZ_ROLE_HOST])
+        };
+
+        console.log('new_state', new_state);
+
+        this.setState(new_state);
+    }
 
 	handleJoin = () => {
         let {rtcEngine, signal, state} = this; 
@@ -245,26 +295,7 @@ export default class App extends Component {
         console.log("Joining chanel", GAME_ID);
 
         rtcEngine.joinChannel(null, GAME_ID, '',	Number(`${new Date().getTime()}`.slice(7)));
-        
-        // if (!signal.joined) {
-        //     console.log('signal', signal);
 
-        //     signal.join(state.channel).then(() => {
-        //         signal.invoke('io.agora.signal.channel_query_userlist', {name: state.channel}, (err, result) => {
-
-        //         });    
-        //     });
-
-        //     signal.joined = true;
-        // }
-
-        // if (!signal.send_message_timer) {
-        //     signal.send_message_timer = setInterval(() => {
-        //         if (signal.joined) {
-        //             signal.sendMessage("cccc", `Hello!!!! ${new Date().toString()} from ${os.hostname()}`);
-        //         }
-        //     }, 10000);
-        // }
 	}
 
 	handleLeave = () => {
@@ -456,10 +487,14 @@ export default class App extends Component {
 
         const {game_status} = state;
 
-        let result = await signal.invoke('io.agora.signal.channel_set_attr', {channel: GAME_ID, name: 'game_status', value: JSON.stringify(game_status)});
+        let result = await this.setChannelAttribute('game_status', JSON.stringify(game_status));
 
-        console.log('2222 result', result);
+        console.log('setGameStatus:: 2222 result', result);
     };
+
+    setChannelAttribute = (key, val) => {
+        return this.signal.invoke('io.agora.signal.channel_set_attr', {channel: GAME_ID, name: key, value: val});
+    }
 
     startNewGame = async () => {        
         const {state, signal} = this;
