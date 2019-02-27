@@ -173,7 +173,9 @@ export default class App extends Component {
                         state.game_role = game_role;
 
                         if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
-                            await this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','))
+                            process.nextTick(() => {
+                              this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','));
+                            });
                         }
                         else if (game_status[game_role + '_video_stream_id']) {
                             videos_on.push(game_role);
