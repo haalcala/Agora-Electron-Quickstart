@@ -99,7 +99,7 @@ export default class App extends Component {
             const {state} = this;
             const {game_status} = state;
 
-            if (quizRole === QUIZ_ROLE_HOST) {
+            if (state.quizRole === QUIZ_ROLE_HOST) {
                 _.times(3).map(n => {
                     const player_key = `player${n}_player_id`;
                     if (game_status[player_key] === account) {
