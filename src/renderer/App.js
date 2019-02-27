@@ -27,11 +27,14 @@ console.log('PLAYER_ID', PLAYER_ID, 'GAME_STATUS_WAIT_FOR_PLAYERS', GAME_STATUS_
 
 export default class App extends Component {
 	constructor(props) {
-		super(props)
-		this.rtcEngine = new AgoraRtcEngine()
+        super(props);
+        
+        this.rtcEngine = new AgoraRtcEngine();
+        
 		if (!APP_ID) {
-			return alert('APP_ID cannot be empty!')
-		} else {
+			return alert('APP_ID cannot be empty!');
+        }
+        else {
 			this.rtcEngine.initialize(APP_ID)
 			this.state = {
                 local: '',
@@ -52,7 +55,7 @@ export default class App extends Component {
                 windowList: [],
                 videos_on : [],
                 game_status : {}
-			}
+			};
 		}
         this.enableAudioMixing = false;
 
@@ -126,6 +129,8 @@ export default class App extends Component {
             const {state} = this;
             const {game_status} = state;
 
+            console.log('game_status.status', game_status.status);
+
             if (game_status.host === PLAYER_ID) {
                 if (game_status.status === GAME_STATUS_WAIT_FOR_PLAYERS) {
                     let next_player;
@@ -161,20 +166,22 @@ export default class App extends Component {
 
                 const videos_on = [];
 
-                state.game_status = game_status;
-
                 ['host', 'player1', 'player2', 'player3'].map(async game_role => {
                     if (game_status[game_role + '_player_id'] == PLAYER_ID) {
                         state.game_role = game_role;
 
                         if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
-                            await this.setChannelAttribute('video_steram_id', [game_role, state.video_stream_id].join(','))
+                            await this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','))
                         }
                         else if (game_status[game_role + '_video_stream_id']) {
                             videos_on.push(game_role);
                         }
                     }
                 });
+
+                state.game_status = game_status;
+
+                console.log('videos_on', videos_on);
 
                 state.videos_on = videos_on;
 
@@ -183,6 +190,14 @@ export default class App extends Component {
                 }
 
                 this.setupVideoPanels();
+            }
+            else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
+                const {game_status} = state;
+                const [game_role, video_stream_id] = val.split(',');
+
+                game_status[`${game_role}_video_stream_id`] = video_stream_id;
+
+                this.setGameStatus();
             }
 
             // client.invoke(
@@ -287,19 +302,30 @@ export default class App extends Component {
     
     setupVideoPanels = () => {
         let {rtcEngine, signal, state} = this; 
+        const {game_status} = state;
 
-        ['host', 'player1', 'player2', 'player3'].map(key => {
-
-        })
-
-        let dom = document.querySelector(`#video-host`);
-            
-        console.log('---===>>> dom', dom);
+        ['host', 'player1', 'player2', 'player3'].map(game_role => {
+            if (!state[`${game_role}_video_stream_id`]) {
+                let dom = document.querySelector(`#video-${game_role}`);
         
-        dom && rtcEngine.setupLocalVideo(dom);
+                console.log('!!!!!!!!!!!!!! dom', dom);
+                console.log('game_status[`${game_role}_video_stream_id`]', game_status[`${game_role}_video_stream_id`]);
+                
+                if (dom && game_status[`${game_role}_video_stream_id`]) {
+                    if (game_status[`${game_role}_video_stream_id`] === state.video_stream_id) {
+                        rtcEngine.setupLocalVideo(dom);
+                    }
+                    else {
+                        rtcEngine.subscribe(game_status[`${game_role}_video_stream_id`], dom);
+                    }
+
+                    state[`${game_role}_video_stream_id`] = 1;
+                }
+            }    
+        })    
 
         const new_state = {
-            local: state.video_stream_id, videos_on: state.videos_on.concat([QUIZ_ROLE_HOST])
+            local: state.video_stream_id
         };
 
         console.log('new_state', new_state);
@@ -584,17 +610,21 @@ export default class App extends Component {
             return;
         }
 
-        const channel =  await signal.join(GAME_ID); 
+        this.setState({quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID});
 
-        console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
+        setTimeout(async () => {
+            const channel =  await signal.join(GAME_ID); 
 
-        // channel.
-        
-        let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+            this.setState({channel});
 
-        console.log('1111 result', result);
+            console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
 
-        this.setState({quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID, channel});
+            // channel.
+            
+            let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+
+            console.log('1111 result', result);
+        }, 1000);
     }
 
     showQuestion = () => {
@@ -869,7 +899,7 @@ export default class App extends Component {
                                     <div style={{height: "250px", overflow: "hidden", padding: "3px", animationName: "example", animationDuration: "1s"}}>
                                         <div className="column is-three-quarters window-container" style={{columnGap: ".1rem"}}>
                                             {['host', 'player1', 'player2', 'player3'].map((item, key) => (
-                                                <Window harold_trace="1111" key={key} uid={item} rtcEngine={this.rtcEngine} show_icon={state.videos_on.indexOf(item) == -1} role={item===SHARE_ID?'remoteVideoSource':'remote'}></Window>
+                                                <Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
                                             ))}
                                             
                                             {/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
@@ -902,17 +932,22 @@ class Window extends Component {
 
 	componentDidMount() {
         // let dom = document.querySelector(`#video-${this.props.uid}`);
+
+        // console.log('dom', dom);
         
 		// if (this.props.role === 'local') {
 		// 	dom && this.props.rtcEngine.setupLocalVideo(dom)
-		// } else if (this.props.role === 'localVideoSource') {
+        // } 
+        // else if (this.props.role === 'localVideoSource') {
         //     dom && this.props.rtcEngine.setupLocalVideoSource(dom)
             
 		// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
 		// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
-		// } else if (this.props.role === 'remote') {
+        // } 
+        // else if (this.props.role === 'remote') {
 		// 	dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
-		// } else if (this.props.role === 'remoteVideoSource') {
+        // } 
+        // else if (this.props.role === 'remoteVideoSource') {
 		// 	dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
 		// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
 		// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
@@ -923,7 +958,7 @@ class Window extends Component {
 		return (
 			<div className="window-item box" style={{padding: ".2rem", border: "1px solid red"}} haa-trace={this.props.harold_trace}>
                 <img className="player-icon" style={{verticalAlign: "middle", marginLeft: "auto", marginRight: "auto", display: (this.props.show_icon ? "block" : "none")}} src={require('../player.jpg')}/>
-			    <div className="video-item is-fluid" id={'video-' + this.props.uid} style={{display: (!this.props.show_icon ? "block" : "none")}}></div>
+			    <div className="video-item is-fluid" id={'video-' + this.props.game_role} style={{display: (!this.props.show_icon ? "block" : "none")}}></div>
 			</div>
 		)
 	}
