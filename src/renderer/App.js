@@ -96,7 +96,20 @@ export default class App extends Component {
         signal.channelEmitter.on('onChannelUserLeaved', (account, uid) => {
             console.log('---===>>> signal.channelEmitter.on(\'onChannelUserLeaved\':: account, uid', account, uid);
 
-            
+            const {state} = this;
+            const {game_status} = state;
+
+            if (quizRole === QUIZ_ROLE_HOST) {
+                _.times(3).map(n => {
+                    const player_key = `player${n}_player_id`;
+                    if (game_status[player_key] === account) {
+                        delete game_status[player_key];
+                        delete game_status[`player${n}_video_stream_id`];
+                    }
+                });
+
+                this.setGameStatus();
+            }
             
             // client.invoke(
             //     'io.agora.signal.channel_query_num',
@@ -143,15 +156,28 @@ export default class App extends Component {
             if (key === 'game_status') {
                 const game_status = val = JSON.parse(val);
 
+                const videos_on = [];
+
                 state.game_status = game_status;
 
                 ['host', 'player1', 'player2', 'player3'].map(async game_role => {
                     if (game_status[game_role + '_player_id'] == PLAYER_ID) {
-                        if (!game_status[game_role + '_video_stream_id']) {
+                        state.game_role = game_role;
+
+                        if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
                             await this.setChannelAttribute('video_steram_id', [game_role, state.video_stream_id].join(','))
+                        }
+                        else if (game_status[game_role + '_video_stream_id']) {
+                            videos_on.push(game_role);
                         }
                     }
                 });
+
+                state.videos_on = videos_on;
+
+                if (!state.video_stream_id && state.game_role) {
+                    this.handleJoin();
+                }
 
                 this.setupVideoPanels();
             }
@@ -167,6 +193,7 @@ export default class App extends Component {
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
             const {state} = this;
+            const {game_status} = state;
 
             console.log('---===>>> this.rtcEngine.on(\'joinedchannel\'):: channel, uid, elapsed', channel, uid, elapsed);
 
@@ -177,6 +204,9 @@ export default class App extends Component {
                 state.game_status.host_player_id = PLAYER_ID;
 
                 this.setupVideoPanels();
+            }
+            else {
+                
             }
         });
         
