@@ -161,6 +161,8 @@ export default class App extends Component {
             
             const {state} = this;
 
+            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
+
             if (key === 'game_status') {
                 const game_status = val = JSON.parse(val);
 
@@ -199,14 +201,6 @@ export default class App extends Component {
 
                 this.setGameStatus();
             }
-
-            // client.invoke(
-            //     'io.agora.signal.channel_query_num',
-            //     { name: signal.channel.name },
-            //     (err, val) => {
-            //     $('.detail .nav').html(`${signal.channel.name}(${val.num})`);
-            //     }
-            // );
         });
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
@@ -284,9 +278,9 @@ export default class App extends Component {
 			// console.log(`uid${uid} volume${volume} speakerNumber${speakerNumber} totalVolume${totalVolume}`)
         });
         
-		this.rtcEngine.on('error', err => {
+		this.rtcEngine.on('error', (...err) => {
 			console.log('---===>>> this.rtcEngine.on(\'error\')::');
-			console.error(err)
+			console.error(...err)
         });
         
 		this.rtcEngine.on('executefailed', funcName => {
@@ -331,28 +325,34 @@ export default class App extends Component {
     }
 
 	handleJoin = () => {
-        let {rtcEngine, signal, state} = this; 
-        
-		rtcEngine.setChannelProfile(1)
-		rtcEngine.setClientRole(state.role)
-		rtcEngine.setAudioProfile(0, 1)
-		rtcEngine.enableVideo()
-		rtcEngine.setLogFile('~/agoraabc.log')
-		rtcEngine.enableLocalVideo(true)
-		rtcEngine.enableWebSdkInteroperability(true)
-		rtcEngine.setVideoProfile(state.videoProfile, false)
-		rtcEngine.enableDualStreamMode(true)
-		rtcEngine.enableAudioVolumeIndication(1000, 3)
-		// rtcEngine.enableDualStream(function() {
-		//	 console.log("Enable dual stream success!")
-		//	 }, function(err) {
-		//	 console,log(err)
-        //	 })
-        
-        console.log("Joining chanel", GAME_ID);
+        try {
+            let {rtcEngine, signal, state} = this; 
+            
+            rtcEngine.setChannelProfile(1)
+            rtcEngine.setClientRole(state.role)
+            rtcEngine.setAudioProfile(0, 1)
+            rtcEngine.enableVideo()
+            rtcEngine.setLogFile('~/agoraabc.log')
+            rtcEngine.enableLocalVideo(true)
+            rtcEngine.enableWebSdkInteroperability(true)
+            rtcEngine.setVideoProfile(state.videoProfile, false)
+            rtcEngine.enableDualStreamMode(true)
+            rtcEngine.enableAudioVolumeIndication(1000, 3)
+            // rtcEngine.enableDualStream(function() {
+            //	 console.log("Enable dual stream success!")
+            //	 }, function(err) {
+            //	 console,log(err)
+            //	 })
+            
+            console.log("Joining chanel", GAME_ID);
+    
+            rtcEngine.joinChannel(null, GAME_ID, '',	Number(`${new Date().getTime()}`.slice(7)));
+        }
+        catch (e) {
+            console.log('handleJoin:: ERRROR:', e);
 
-        rtcEngine.joinChannel(null, GAME_ID, '',	Number(`${new Date().getTime()}`.slice(7)));
-
+            throw e;
+        }
 	}
 
 	handleLeave = () => {
@@ -362,7 +362,7 @@ export default class App extends Component {
 		rtcEngine.disableVideo()
 		rtcEngine.enableDualStreamMode(false)
 
-        rtcEngine.leaveChannel(this.state.channel);
+        rtcEngine.leaveChannel(GAME_ID);
         
         signal.joined = false;
         signal.leave();
@@ -510,6 +510,8 @@ export default class App extends Component {
     }
     
     startQuiz = async (quizRole) => {
+        console.log('startQuiz:: state', this.state, 'quizRole', quizRole);
+
         const {state, signal} = this;
 
         if (state.quizIsOn && quizRole != state.quizRole) {
@@ -531,8 +533,6 @@ export default class App extends Component {
         }
         else if (quizRole == QUIZ_ROLE_PLAYER) {
             await this.joinGame();
-
-            this.handleJoin();
         }
         else {
             console.log('ERROR: Unknown quizRole', quizRole);
@@ -597,6 +597,8 @@ export default class App extends Component {
     }
 
     joinGame = async () => {
+        console.log('joinGame::');
+
         const{state, signal} = this;
 
         GAME_ID = state.GAME_ID;
@@ -610,17 +612,24 @@ export default class App extends Component {
         this.setState({quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID});
 
         setTimeout(async () => {
-            const channel =  await signal.join(GAME_ID); 
-
-            this.setState({channel});
-
-            console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
-
-            // channel.
-            
-            let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
-
-            console.log('1111 result', result);
+            try {
+                const channel =  await signal.join(GAME_ID); 
+    
+                this.setState({channel});
+    
+                console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
+    
+                // channel.
+                
+                // let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+    
+                // console.log('1111 result', result);
+    
+                // this.handleJoin();
+            }
+            catch (e) {
+                console.log('joinGame:: ERROR:', e);
+            }
         }, 1000);
     }
 

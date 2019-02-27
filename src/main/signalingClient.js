@@ -97,40 +97,54 @@ export default class SignalingClient {
    * @returns {Promise}
    */
   join(channel) {
-    console.log('----->>>>> signalingClient.join(channel)', channel);
+    console.log('----->>>>> signalingClient.join:: channel', channel);
 
     this._channel = channel;
     return new Promise((resolve, reject) => {
-      if (!this.session) {
-        throw {
-          Message: '"session" must be initialized before joining channel'
-        };
-      }
-      this.channel = this.session.channelJoin(channel);
-      // Proxy callback on channel to channelEmitter
-      [
-        'onChannelJoined',
-        'onChannelJoinFailed',
-        'onChannelLeaved',
-        'onChannelUserJoined',
-        'onChannelUserLeaved',
-        'onChannelUserList',
-        'onChannelAttrUpdated',
-        'onMessageChannelReceive'
-      ].map(event => {
-        return (this.channel[event] = (...args) => { 
-          this.channelEmitter.emit(event, ...args);
-        });
-      });
-      // Promise.then
-      this.channelEmitter.once('onChannelJoined', (...args) => {
-        resolve(this.channel, ...args);
-      });
-      // Promise.catch
-      this.channelEmitter.once('onChannelJoinFailed', (...args) => {
-        this.channelEmitter.removeAllListeners()
-        reject(...args);
-      });
+        try {
+            if (!this.session) {
+              throw {
+                Message: '"session" must be initialized before joining channel'
+              };
+            }
+            this.channel = this.session.channelJoin(channel);
+            // Proxy callback on channel to channelEmitter
+      
+            // console.log('----->>>>> signalingClient.join:: setting up events');
+            [
+              'onChannelJoined',
+              'onChannelJoinFailed',
+              'onChannelLeaved',
+              'onChannelUserJoined',
+              'onChannelUserLeaved',
+              'onChannelUserList',
+              'onChannelAttrUpdated',
+              'onMessageChannelReceive'
+            ].map(event => {
+              return (this.channel[event] = (...args) => { 
+                //   console.log('signalingClient.join:: event', event, '...args', ...args);
+                this.channelEmitter.emit(event, ...args);
+              });
+            });
+      
+            console.log('aaaaa')
+            // Promise.then
+            this.channelEmitter.once('onChannelJoined', (...args) => {
+            //   console.log('signalingClient.join:: onChannelJoined', '...args', ...args);
+              resolve(this.channel, ...args);
+            });
+      
+            console.log('bbbbb')
+            // Promise.catch
+            this.channelEmitter.once('onChannelJoinFailed', (...args) => {
+            //   console.log('signalingClient.join:: onChannelJoinFailed', '...args', ...args);
+              this.channelEmitter.removeAllListeners()
+              reject(...args);
+            });
+        }
+        catch (e) {
+            reject(e);
+        }
     });
   }
 
