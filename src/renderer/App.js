@@ -642,17 +642,16 @@ export default class App extends Component {
 			/>
         }
         
-        console.log('state', state);
-        console.log('state.users', state.users);
+        // console.log('state', state);
+        // console.log('state.users', state.users);
         
-        console.log('require(\'../player.jpg\')', require('../player.jpg'))
+        // console.log('require(\'../player.jpg\')', require('../player.jpg'))
 
 		return (
 			<div className="columns" style={{padding: "20px", height: '100%', margin: '0'}}>
 
             { state.showWindowPicker ? windowPicker : '' }
 
-            
 			<div className="column is-one-quarter" style={{overflowY: 'auto'}}>
 				<div className="field">
 				<label className="label">Player ID</label>
