@@ -64,9 +64,9 @@ export default class App extends Component {
 
 			console.log('Signaling version', new Signal().getSDKVersion());
 
-			// let signal = this.signal = new SignalingClient(APP_ID);
+			let signal = this.signal = new SignalingClient(APP_ID);
 
-			// // let signal_session = this.signal_session = await signal.login(PLAYER_ID);
+			let signal_session = this.signal_session = await signal.login(PLAYER_ID);
 
 			// console.log("signal", signal);
 			// console.log("signal_session", signal_session);
@@ -74,7 +74,7 @@ export default class App extends Component {
 	}
 
 	componentDidMount() {
-		// this.subscribeEvents()
+		this.subscribeEvents()
 		window.rtcEngine = this.rtcEngine;
 	}
 
@@ -352,9 +352,9 @@ export default class App extends Component {
 
 		signal.leave();
 
-        signal.logout();
+        // signal.logout();
         
-        this.signal = null;
+        // this.signal = null;
 	}
 
 	handleCameraChange = e => {
@@ -425,9 +425,10 @@ export default class App extends Component {
 		}, bitrate = 0
 	) {
 		if (!this.sharingPrepared) {
-			console.error('Sharing not prepared yet.')
-			return false
-		};
+			console.error('Sharing not prepared yet.');
+			return false;
+        }
+        
 		return new Promise((resolve, reject) => {
 			this.rtcEngine.startScreenCapture2(windowId, captureFreq, rect, bitrate);
 			this.rtcEngine.videoSourceSetVideoProfile(43, false);
@@ -513,12 +514,12 @@ export default class App extends Component {
 			return this.setState({ quizIsOn: false });
 		}
 
-        let signal = this.signal = new SignalingClient(APP_ID);
+        // let signal = this.signal = new SignalingClient(APP_ID);
 
-        let signal_session = await signal.login(PLAYER_ID);
-        // await signal.login(PLAYER_ID);
+        // let signal_session = await signal.login(PLAYER_ID);
+        // // await signal.login(PLAYER_ID);
 
-        this.subscribeEvents();
+        // this.subscribeEvents();
 
 		console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
 
