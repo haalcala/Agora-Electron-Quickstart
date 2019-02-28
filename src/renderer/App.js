@@ -140,19 +140,21 @@ export default class App extends Component {
 			}
 		});
 
-		signal.channelEmitter.on('onChannelAttrUpdated', (key, val, ...args) => {
-			console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: key, val, ...args', key, val, ...args);
+		signal.channelEmitter.on('onChannelAttrUpdated', (key, val, op, ...args) => {
+            if (op === "set") {
+                return;
+            }
+
+			console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: key, val, op, ...args', key, val, op, ...args);
 
 			const { state } = this;
 
-            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
+            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', JSON.stringify(state));
             
             setTimeout(() => {
                 if (key === 'game_status') {
                     const game_status = val = JSON.parse(val);
-    
-                    const videos_on = [];
-    
+        
                     ['host', 'player1', 'player2', 'player3'].map(async game_role => {
                         if (game_status[game_role + '_player_id'] == PLAYER_ID) {
                             state.game_role = game_role;
@@ -162,18 +164,11 @@ export default class App extends Component {
                                     this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','));
                                 });
                             }
-                            else if (game_status[game_role + '_video_stream_id']) {
-                                videos_on.push(game_role);
-                            }
                         }
                     });
     
                     state.game_status = game_status;
-    
-                    console.log('videos_on', videos_on);
-    
-                    state.videos_on = videos_on;
-    
+            
                     if (!state.video_stream_id && state.game_role) {
                         this.handleJoin();
                     }
@@ -565,6 +560,9 @@ export default class App extends Component {
         });
 
         delete state.game_role;
+        delete state.quizIsOn;
+        delete state.quizRole;
+        delete state.video_stream_id;
     }
 
 	startNewGame = async () => {
@@ -599,11 +597,6 @@ export default class App extends Component {
 
 			await this.setGameStatus();
 
-			// await signal.invoke('io.agora.signal.user_set_attr', {name: "GAME_ID" + account, value: GAME_ID});
-			// await signal.invoke('io.agora.signal.user_set_attr', {name: "PLAYER_ID" + account, value: PLAYER_ID});
-			// await signal.invoke('io.agora.signal.user_set_attr', {name: "HOST_PLAYER_ID" + account, value: PLAYER_ID});
-
-
 
 			this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
 		}
@@ -613,11 +606,11 @@ export default class App extends Component {
 	}
 
 	joinGame = async () => {
-        console.log('joinGame::');
+        const { state, signal } = this;
+        
+        console.log('joinGame:: state', state);
         
         this.setupNewGame();
-
-		const { state, signal } = this;
 
 		GAME_ID = state.GAME_ID;
 
