@@ -64,11 +64,11 @@ export default class App extends Component {
 
 			console.log('Signaling version', new Signal().getSDKVersion());
 
-			let signal = this.signal = new SignalingClient(APP_ID);
+			// let signal = this.signal = new SignalingClient(APP_ID);
 
-			// let signal_session = this.signal_session = await signal.login(PLAYER_ID);
+			// // let signal_session = this.signal_session = await signal.login(PLAYER_ID);
 
-			console.log("signal", signal);
+			// console.log("signal", signal);
 			// console.log("signal_session", signal_session);
 		})();
 	}
@@ -113,14 +113,6 @@ export default class App extends Component {
 
 				this.setGameStatus();
 			}
-
-			// client.invoke(
-			//     'io.agora.signal.channel_query_num',
-			//     { name: signal.channel.name },
-			//     (err, val) => {
-			//     $('.detail .nav').html(`${signal.channel.name}(${val.num})`);
-			//     }
-			// );
 		});
 
 		signal.channelEmitter.on('onChannelUserJoined', async (account, uid) => {
@@ -146,14 +138,6 @@ export default class App extends Component {
 					await this.setGameStatus();
 				}
 			}
-
-			// client.invoke(
-			//     'io.agora.signal.channel_query_num',
-			//     { name: signal.channel.name },
-			//     (err, val) => {
-			//     $('.detail .nav').html(`${signal.channel.name}(${val.num})`);
-			//     }
-			// );
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', (key, val, ...args) => {
@@ -199,7 +183,7 @@ export default class App extends Component {
 				const { game_status } = state;
 				const [game_role, video_stream_id] = val.split(',');
 
-				game_status[`${game_role}_video_stream_id`] = video_stream_id;
+				game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
 
 				this.setGameStatus();
 			}
@@ -366,10 +350,11 @@ export default class App extends Component {
 
 		rtcEngine.leaveChannel(GAME_ID);
 
-		signal.joined = false;
 		signal.leave();
 
-		signal.logout();
+        signal.logout();
+        
+        this.signal = null;
 	}
 
 	handleCameraChange = e => {
@@ -516,7 +501,7 @@ export default class App extends Component {
 	startQuiz = async (quizRole) => {
 		console.log('startQuiz:: state', this.state, 'quizRole', quizRole);
 
-		const { state, signal } = this;
+		const { state } = this;
 
 		if (state.quizIsOn && quizRole != state.quizRole) {
 			return;
@@ -528,9 +513,12 @@ export default class App extends Component {
 			return this.setState({ quizIsOn: false });
 		}
 
-		await signal.login(PLAYER_ID);
+        let signal = this.signal = new SignalingClient(APP_ID);
 
-		this.subscribeEvents();
+        let signal_session = await signal.login(PLAYER_ID);
+        // await signal.login(PLAYER_ID);
+
+        this.subscribeEvents();
 
 		console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
 
