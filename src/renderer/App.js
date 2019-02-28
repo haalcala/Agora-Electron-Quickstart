@@ -145,48 +145,50 @@ export default class App extends Component {
 
 			const { state } = this;
 
-			console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
-
-			if (key === 'game_status') {
-				const game_status = val = JSON.parse(val);
-
-				const videos_on = [];
-
-				['host', 'player1', 'player2', 'player3'].map(async game_role => {
-					if (game_status[game_role + '_player_id'] == PLAYER_ID) {
-						state.game_role = game_role;
-
-						if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
-							process.nextTick(() => {
-								this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','));
-							});
-						}
-						else if (game_status[game_role + '_video_stream_id']) {
-							videos_on.push(game_role);
-						}
-					}
-				});
-
-				state.game_status = game_status;
-
-				console.log('videos_on', videos_on);
-
-				state.videos_on = videos_on;
-
-				if (!state.video_stream_id && state.game_role) {
-					this.handleJoin();
-				}
-
-				this.setupVideoPanels();
-			}
-			else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
-				const { game_status } = state;
-				const [game_role, video_stream_id] = val.split(',');
-
-				game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
-
-				this.setGameStatus();
-			}
+            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
+            
+            setTimeout(() => {
+                if (key === 'game_status') {
+                    const game_status = val = JSON.parse(val);
+    
+                    const videos_on = [];
+    
+                    ['host', 'player1', 'player2', 'player3'].map(async game_role => {
+                        if (game_status[game_role + '_player_id'] == PLAYER_ID) {
+                            state.game_role = game_role;
+    
+                            if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
+                                process.nextTick(() => {
+                                    this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','));
+                                });
+                            }
+                            else if (game_status[game_role + '_video_stream_id']) {
+                                videos_on.push(game_role);
+                            }
+                        }
+                    });
+    
+                    state.game_status = game_status;
+    
+                    console.log('videos_on', videos_on);
+    
+                    state.videos_on = videos_on;
+    
+                    if (!state.video_stream_id && state.game_role) {
+                        this.handleJoin();
+                    }
+    
+                    this.setupVideoPanels();
+                }
+                else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
+                    const { game_status } = state;
+                    const [game_role, video_stream_id] = val.split(',');
+    
+                    game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
+    
+                    this.setGameStatus();
+                }
+            }, 1000);
 		});
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
