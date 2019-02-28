@@ -66,7 +66,7 @@ export default class App extends Component {
 
 			let signal = this.signal = new SignalingClient(APP_ID);
 
-			let signal_session = this.signal_session = await signal.login(PLAYER_ID);
+			// let signal_session = this.signal_session = await signal.login(PLAYER_ID);
 
 			// console.log("signal", signal);
 			// console.log("signal_session", signal_session);
@@ -278,6 +278,8 @@ export default class App extends Component {
 	}
 
 	setupVideoPanels = () => {
+        console.log('setupVideoPanels::');
+
 		let { rtcEngine, signal, state } = this;
 		const { game_status } = state;
 
@@ -285,11 +287,12 @@ export default class App extends Component {
 			if (!state[`${game_role}_video_stream_id`]) {
 				let dom = document.querySelector(`#video-${game_role}`);
 
-				console.log('!!!!!!!!!!!!!! dom', dom);
+				// console.log('!!!!!!!!!!!!!! dom', dom);
 				console.log('game_status[`${game_role}_video_stream_id`]', game_status[`${game_role}_video_stream_id`]);
 
 				if (dom && game_status[`${game_role}_video_stream_id`]) {
-					const uid = parseInt(game_status[`${game_role}_video_stream_id`]);
+                    const uid = parseInt(game_status[`${game_role}_video_stream_id`]);
+                    
 					if (uid === state.video_stream_id) {
 						rtcEngine.setupLocalVideo(dom);
 					}
@@ -297,10 +300,10 @@ export default class App extends Component {
 						rtcEngine.subscribe(uid, dom);
 						rtcEngine.setRemoteVideoStreamType(uid, 1);
 					}
-
-					state[`${game_role}_video_stream_id`] = 1;
-				}
-			}
+                }
+            }
+            
+            state[`${game_role}_video_stream_id`] = !!game_status[`${game_role}_video_stream_id`];
 		})
 
 		const new_state = {
@@ -354,7 +357,7 @@ export default class App extends Component {
 
 		signal.leave();
 
-        // signal.logout();
+        signal.logout();
         
         // this.signal = null;
 	}
@@ -504,7 +507,7 @@ export default class App extends Component {
 	startQuiz = async (quizRole) => {
 		console.log('startQuiz:: state', this.state, 'quizRole', quizRole);
 
-		const { state } = this;
+		const { state, signal } = this;
 
 		if (state.quizIsOn && quizRole != state.quizRole) {
 			return;
@@ -518,7 +521,7 @@ export default class App extends Component {
 
         // let signal = this.signal = new SignalingClient(APP_ID);
 
-        // let signal_session = await signal.login(PLAYER_ID);
+        let signal_session = await signal.login(PLAYER_ID);
         // // await signal.login(PLAYER_ID);
 
         // this.subscribeEvents();
@@ -550,10 +553,24 @@ export default class App extends Component {
 
 	setChannelAttribute = (key, val) => {
 		return this.signal.invoke('io.agora.signal.channel_set_attr', { channel: GAME_ID, name: key, value: val });
-	}
+    }
+    
+    setupNewGame = () => {
+        const { state, signal } = this;
+        
+        state.game_status = {};
+
+        ['host', 'player1', 'player2', 'player3'].map(game_role => {
+            delete state[`${game_role}_video_stream_id`];
+        });
+
+        delete state.game_role;
+    }
 
 	startNewGame = async () => {
-		const { state, signal } = this;
+        this.setupNewGame();
+
+        const { state, signal } = this;
 
 		const { game_status } = state;
 
@@ -596,7 +613,9 @@ export default class App extends Component {
 	}
 
 	joinGame = async () => {
-		console.log('joinGame::');
+        console.log('joinGame::');
+        
+        this.setupNewGame();
 
 		const { state, signal } = this;
 
