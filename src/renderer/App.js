@@ -151,19 +151,13 @@ export default class App extends Component {
 
             console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', JSON.stringify(state));
             
-            setTimeout(() => {
+            // setTimeout(() => {
                 if (key === 'game_status') {
                     const game_status = val = JSON.parse(val);
         
                     ['host', 'player1', 'player2', 'player3'].map(async game_role => {
                         if (game_status[game_role + '_player_id'] == PLAYER_ID) {
                             state.game_role = game_role;
-    
-                            if (!game_status[game_role + '_video_stream_id'] && state.video_stream_id) {
-                                process.nextTick(() => {
-                                    this.setChannelAttribute('video_stream_id', [game_role, state.video_stream_id].join(','));
-                                });
-                            }
                         }
                     });
     
@@ -180,10 +174,14 @@ export default class App extends Component {
                     const [game_role, video_stream_id] = val.split(',');
     
                     game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
+
+                    delete state[`${game_role}_video_stream_id`];
     
                     this.setGameStatus();
+
+                    this.setupVideoPanels();
                 }
-            }, 1000);
+            // }, 1000);
 		});
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
@@ -199,7 +197,14 @@ export default class App extends Component {
 				state.game_status.host_player_id = PLAYER_ID;
 
 				this.setupVideoPanels();
-			}
+            }
+            else if (state.quizRole === QUIZ_ROLE_PLAYER && state.game_role) {
+                if (!game_status[state.game_role + '_video_stream_id'] && state.video_stream_id) {
+                    process.nextTick(() => {
+                        this.setChannelAttribute('video_stream_id', [state.game_role, state.video_stream_id].join(','));
+                    });
+                }
+            }
 		});
 
 		this.rtcEngine.on('userjoined', (uid, elapsed) => {
@@ -283,7 +288,7 @@ export default class App extends Component {
 				let dom = document.querySelector(`#video-${game_role}`);
 
 				// console.log('!!!!!!!!!!!!!! dom', dom);
-				console.log('game_status[`${game_role}_video_stream_id`]', game_status[`${game_role}_video_stream_id`]);
+				console.log('game_status['+game_role+'_video_stream_id]', game_status[`${game_role}_video_stream_id`]);
 
 				if (dom && game_status[`${game_role}_video_stream_id`]) {
                     const uid = parseInt(game_status[`${game_role}_video_stream_id`]);
@@ -566,9 +571,11 @@ export default class App extends Component {
     }
 
 	startNewGame = async () => {
-        this.setupNewGame();
-
         const { state, signal } = this;
+
+        console.log('startNewGame:: state', state);
+
+        this.setupNewGame();
 
 		const { game_status } = state;
 
