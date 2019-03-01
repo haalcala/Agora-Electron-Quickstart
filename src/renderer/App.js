@@ -989,8 +989,8 @@ class Window extends Component {
         console.log('Window.render:: props', this.props, 'state', this.state);
 
         setTimeout(() => {
-            if (!this.state.uid && this.props.uid) {
-                this.state.uid = this.props.uid;
+            if (this.props.uid) {
+                // this.state.uid = this.props.uid;
     
                 let dom = document.querySelector(`#video-${this.props.game_role}`);
     
