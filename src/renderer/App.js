@@ -295,13 +295,13 @@ export default class App extends Component {
 
                     console.log('enabling video stream id', uid);
                     
-					if (uid === state.video_stream_id) {
-						rtcEngine.setupLocalVideo(dom);
-					}
-					else {
-						rtcEngine.subscribe(uid, dom);
-						rtcEngine.setRemoteVideoStreamType(uid, 1);
-					}
+					// if (uid === state.video_stream_id) {
+					// 	rtcEngine.setupLocalVideo(dom);
+					// }
+					// else {
+					// 	rtcEngine.subscribe(uid, dom);
+					// 	rtcEngine.setRemoteVideoStreamType(uid, 1);
+					// }
                 }
             }
             
@@ -631,7 +631,7 @@ export default class App extends Component {
 
 		this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID });
 
-		setTimeout(async () => {
+		// setTimeout(async () => {
 			try {
 				const channel = await signal.join(GAME_ID);
 
@@ -650,7 +650,7 @@ export default class App extends Component {
 			catch (e) {
 				console.log('joinGame:: ERROR:', e);
 			}
-		}, 1000);
+		// }, 1000);
 	}
 
 	showQuestion = () => {
@@ -755,7 +755,8 @@ export default class App extends Component {
 	}
 
 	render() {
-		const { state } = this;
+        const { state } = this;
+        const { game_status } = state;
 
 		let windowPicker
 
@@ -950,41 +951,73 @@ class Window extends Component {
 	constructor(props) {
 		super(props)
 		this.state = {
-			loading: false
+            loading: false
 		}
 
-		console.log('Window.constructor props', props);
+		console.log('Window.constructor:: props', props);
 	}
 
-	componentDidMount() {
-		// let dom = document.querySelector(`#video-${this.props.uid}`);
+	// componentDidMount() {
+    //     if (!this.props.uid) {
+    //         return;
+    //     }
 
-		// console.log('dom', dom);
+	// 	let dom = document.querySelector(`#video-${this.props.uid}`);
 
-		// if (this.props.role === 'local') {
-		// 	dom && this.props.rtcEngine.setupLocalVideo(dom)
-		// } 
-		// else if (this.props.role === 'localVideoSource') {
-		//     dom && this.props.rtcEngine.setupLocalVideoSource(dom)
+	// 	console.log('Window.componentDidMount:: dom', dom);
 
-		// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
-		// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
-		// } 
-		// else if (this.props.role === 'remote') {
-		// 	dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
-		// } 
-		// else if (this.props.role === 'remoteVideoSource') {
-		// 	dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
-		// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
-		// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
-		// }
-	}
+	// 	if (this.props.role === 'local') {
+	// 		dom && this.props.rtcEngine.setupLocalVideo(dom)
+	// 	} 
+	// 	// else if (this.props.role === 'localVideoSource') {
+	// 	//     dom && this.props.rtcEngine.setupLocalVideoSource(dom)
+
+	// 	// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
+	// 	// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
+	// 	// } 
+	// 	else if (this.props.role === 'remote') {
+	// 		dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
+	// 	} 
+	// 	// else if (this.props.role === 'remoteVideoSource') {
+	// 	// 	dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
+	// 	// 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
+	// 	// 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
+	// 	// }
+	// }
 
 	render() {
+        console.log('Window.render:: props', this.props, 'state', this.state);
+
+        setTimeout(() => {
+            if (!this.state.uid && this.props.uid) {
+                this.state.uid = this.props.uid;
+    
+                let dom = document.querySelector(`#video-${this.props.game_role}`);
+    
+                console.log('Window.render:: dom', dom);
+        
+                if (this.props.role === 'local') {
+                    dom && this.props.rtcEngine.setupLocalVideo(dom)
+                } 
+                // else if (this.props.role === 'localVideoSource') {
+                //     dom && this.props.rtcEngine.setupLocalVideoSource(dom)
+        
+                // 	this.props.rtcEngine.setupViewContentMode('videosource', 1);
+                // 	this.props.rtcEngine.setupViewContentMode(String(SHARE_ID), 1);
+                // } 
+                else if (this.props.role === 'remote') {
+                    dom && this.props.rtcEngine.subscribe(this.props.uid, dom)
+                } 
+            }            
+        }, 100);
+
 		return (
 			<div className="window-item box" style={{ padding: ".2rem", border: "1px solid red" }} haa-trace={this.props.harold_trace}>
-				<img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto", display: (this.props.show_icon ? "block" : "none") }} src={require('../player.jpg')} />
-				<div className="video-item is-fluid" id={'video-' + this.props.game_role} style={{ display: (!this.props.show_icon ? "block" : "none") }}></div>
+                {this.props.uid ? (
+                    <div className="video-item is-fluid" id={'video-' + this.props.game_role}></div>
+                ) : (
+                    <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto"}} src={require('../player.jpg')} />
+                )}
 			</div>
 		)
 	}
