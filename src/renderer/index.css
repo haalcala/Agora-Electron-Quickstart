@@ -12,7 +12,7 @@ html, body {
 
 .window-container {
   display: grid!important;
-  grid: repeat(2, 50%) / repeat(3, 33%);
+  grid: repeat(2, 50%) / repeat(4, 33%);
   padding: .1rem;
 }
 
