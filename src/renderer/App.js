@@ -21,7 +21,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(3);
 
-let GAME_ID;
+let GAME_ID = 'qVf3aoWiX';
 
 console.log('PLAYER_ID', PLAYER_ID, 'GAME_STATUS_WAIT_FOR_PLAYERS', GAME_STATUS_WAIT_FOR_PLAYERS, 'GAME_STATUS_STARTED', GAME_STATUS_STARTED, 'GAME_STATUS_ENDED', GAME_STATUS_ENDED);
 
@@ -774,7 +774,18 @@ export default class App extends Component {
 		// console.log('require(\'../player.jpg\')', require('../player.jpg'))
 
 		return (
-			<div className="columns" style={{ padding: "20px", height: '100%', margin: '0' }}>
+            <div className="" style={{background: 'green'}}>
+
+<div class="row" style={{width: '100%'}}>
+    <div class="col-sm-3" style={{background: 'blue'}}>
+      1 of 3
+    </div>
+    <div class="col w-100" style={{background: 'white'}}>
+      Variable width content
+    </div>
+  </div>
+
+			<div className="columns" style={{ width: '100%', padding: "20px", height: '100%', margin: '0' }}>
 
 				{state.showWindowPicker ? windowPicker : ''}
 
@@ -941,8 +952,8 @@ export default class App extends Component {
 					</div>
 
 				</div>
-
 			</div>
+            </div>
 		)
 	}
 }
