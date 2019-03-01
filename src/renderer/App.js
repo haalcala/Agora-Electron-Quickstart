@@ -292,6 +292,8 @@ export default class App extends Component {
 
 				if (dom && game_status[`${game_role}_video_stream_id`]) {
                     const uid = parseInt(game_status[`${game_role}_video_stream_id`]);
+
+                    console.log('enabling video stream id', uid);
                     
 					if (uid === state.video_stream_id) {
 						rtcEngine.setupLocalVideo(dom);
