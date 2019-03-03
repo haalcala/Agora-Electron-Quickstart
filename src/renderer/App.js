@@ -13,13 +13,14 @@ import os from 'os'
 import { videoProfileList, audioProfileList, audioScenarioList, APP_ID, SHARE_ID } from '../utils/settings'
 import base64Encode from '../utils/base64'
 import WindowPicker from './components/WindowPicker/index.js'
+import QuestionPanel from './components/QuestionPanel/index.js'
 import SignalingClient from '../main/signalingClient';
 
 import shortid from 'shortid';
 
 const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host', 'player', 'audience', shortid.generate()];
 
-const [GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(3);
+const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
 let GAME_ID = 'qVf3aoWiX';
 
@@ -121,10 +122,10 @@ export default class App extends Component {
 			const { state } = this;
 			const { game_status } = state;
 
-			console.log('game_status.status', game_status.status);
+			console.log('game_status.state', game_status.state);
 
 			if (game_status.host === PLAYER_ID) {
-				if (game_status.status === GAME_STATUS_WAIT_FOR_PLAYERS) {
+				if (game_status.state === GAME_STATUS_WAIT_FOR_PLAYERS) {
 					let next_player;
 
 					_.times(3).map(i => {
@@ -164,7 +165,7 @@ export default class App extends Component {
                     state.game_status = game_status;
             
                     if (!state.video_stream_id && state.game_role) {
-                        this.handleJoin();
+                        // this.handleJoin();
                     }
     
                     this.setupVideoPanels();
@@ -194,7 +195,6 @@ export default class App extends Component {
 
 			if (state.quizRole === QUIZ_ROLE_HOST) {
 				state.game_status.host_video_stream_id = uid;
-				state.game_status.host_player_id = PLAYER_ID;
 
 				this.setupVideoPanels();
             }
@@ -445,7 +445,7 @@ export default class App extends Component {
 
 	handleScreenSharing = e => {
 		// getWindowInfo and open Modal
-		let list = this.rtcEngine.getScreenWindowsInfo();
+		let list = this.rtcEngine.getScreenvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvInfo();
 
 		let windowList = list.map(item => {
 			return {
@@ -506,8 +506,8 @@ export default class App extends Component {
 		})
 	}
 
-	startQuiz = async (quizRole) => {
-		console.log('startQuiz:: state', this.state, 'quizRole', quizRole);
+	startGame = async (quizRole) => {
+		console.log('startGame:: state', this.state, 'quizRole', quizRole);
 
 		const { state, signal } = this;
 
@@ -533,7 +533,7 @@ export default class App extends Component {
 		if (quizRole == QUIZ_ROLE_HOST) {
 			await this.startNewGame();
 
-			this.handleJoin();
+			// this.handleJoin(); 	
 		}
 		else if (quizRole == QUIZ_ROLE_PLAYER) {
 			await this.joinGame();
@@ -553,6 +553,37 @@ export default class App extends Component {
 		console.log('setGameStatus:: 2222 result', result);
 	};
 
+	handleStartQuiz = () => {
+		console.log('handleStartQuiz::');
+
+		const { state, signal } = this;
+
+		const { game_status } = state;
+
+		console.log('game_status', game_status)
+
+		if (game_status.state === GAME_STATUS_WAIT_FOR_PLAYERS) {
+			game_status.state = GAME_STATUS_STARTED;
+		}
+		else {
+			console.log('handleStartQuiz:: invalid game state. Expecting', GAME_STATUS_WAIT_FOR_PLAYERS, 'but got', game_status.state);
+		}
+
+		this.setState({});
+	};
+
+	handleEndQuiz = () => {
+		console.log('handleEndQuiz::');
+
+		const { state, signal } = this;
+
+		const { game_status } = state;
+
+		game_status.state = GAME_STATUS_ENDED;
+
+		this.setState({});
+	}
+
 	setChannelAttribute = (key, val) => {
 		return this.signal.invoke('io.agora.signal.channel_set_attr', { channel: GAME_ID, name: key, value: val });
     }
@@ -560,7 +591,7 @@ export default class App extends Component {
     setupNewGame = () => {
         const { state, signal } = this;
         
-        state.game_status = {};
+        state.game_status = {state: GAME_STATUS_INITIALISED};
 
         ['host', 'player1', 'player2', 'player3'].map(game_role => {
             delete state[`${game_role}_video_stream_id`];
@@ -596,16 +627,13 @@ export default class App extends Component {
 		if (result.list && result.list.length === 1 && result.list[0][0] === PLAYER_ID) {
 			state.channel = channel;
 
-			game_status.status = GAME_STATUS_WAIT_FOR_PLAYERS;
-			game_status.host = PLAYER_ID;
-			game_status.player1_player_id = state.player1_player_id;
-			game_status.player2_player_id = state.player2_player_id;
-			game_status.player3_player_id = state.player3_player_id;
+			game_status.state = GAME_STATUS_WAIT_FOR_PLAYERS;
+
+			game_status.host_player_id = PLAYER_ID;
 
 			console.log('Created a new game successfully.');
 
 			await this.setGameStatus();
-
 
 			this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
 		}
@@ -774,16 +802,16 @@ export default class App extends Component {
 		// console.log('require(\'../player.jpg\')', require('../player.jpg'))
 
 		return (
-            <div className="" style={{background: 'green'}}>
+            <div className="" style={{_background: 'green'}}>
 
-<div class="row" style={{width: '100%'}}>
+{/* <div class="row" style={{width: '100%'}}>
     <div class="col-sm-3" style={{background: 'blue'}}>
       1 of 3
     </div>
     <div class="col w-100" style={{background: 'white'}}>
       Variable width content
     </div>
-  </div>
+  </div> */}
 
 			<div className="columns" style={{ width: '100%', padding: "20px", height: '100%', margin: '0' }}>
 
@@ -908,28 +936,31 @@ export default class App extends Component {
 					<div className="field">
 						<label className="label">Host Quiz</label>
 						<div className="control">
-							<button onClick={e => this.startQuiz(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST ? 'stop' : 'start'}</button>
+							<button onClick={e => this.startGame(QUIZ_ROLE_HOST)} id="host-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST ? 'stop' : 'start'}</button>
 						</div>
 					</div>
 					<div className="field">
 						<label className="label">Answer Quiz</label>
 						<div className="control">
-							<button onClick={e => this.startQuiz(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_PLAYER) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_PLAYER ? 'stop' : 'start'}</button>
+							<button onClick={e => this.startGame(QUIZ_ROLE_PLAYER)} id="participant-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_PLAYER) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_PLAYER ? 'stop' : 'start'}</button>
 						</div>
 					</div>
 					<div className="field">
 						<label className="label">Watch Quiz</label>
 						<div className="control">
-							<button onClick={e => this.startQuiz(audience)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_AUDIENCE) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_AUDIENCE ? 'stop' : 'start'}</button>
+							<button onClick={e => this.startGame(QUIZ_ROLE_AUDIENCE)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_AUDIENCE) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_AUDIENCE ? 'stop' : 'start'}</button>
+						</div>
+					</div>
+					<div className="field">
+						<div className="control">
+							<button onClick={game_status.state === GAME_STATUS_STARTED && this.handleEndQuiz || this.handleStartQuiz} className={"button" + ((state.quizRole === QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && game_status.state === GAME_STATUS_STARTED ? 'End Quiz' : 'Start Quiz'}</button>
 						</div>
 					</div>
 				</div>
 				<div className="tile is-ancestor">
 					<div className="tile is-vertical is-parent" style={{ border: "1px dashed green", bbackground: "lightgreen" }}>
 						<div className="tile is-child" style={{ position: "relative" }}>
-							<div className="card" style={{ position: "absolute", left: 0, top: 0, border: "1px solid red", width: "100%", height: "100%" }}>
-								this is a question panel
-														</div>
+							<QuestionPanel></QuestionPanel>
 						</div>
 						{state.quizIsOn ? (
 							<div className="tile is-child" style={{ border: "1px dashed blue", display: "contents" }}>
@@ -943,7 +974,6 @@ export default class App extends Component {
 											{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
 											{/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
-
 										</div>
 									</div>
 								</div>
@@ -1033,3 +1063,4 @@ class Window extends Component {
 		)
 	}
 }
+
