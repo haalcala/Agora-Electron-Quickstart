@@ -558,7 +558,7 @@ export default class App extends Component {
 		console.log('setGameStatus:: 2222 result', result);
 	};
 
-	handleStartQuiz = () => {
+	handleStartQuiz = async () => {
 		console.log('handleStartQuiz::');
 
 		const { state, signal } = this;
