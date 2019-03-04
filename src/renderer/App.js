@@ -791,32 +791,48 @@ export default class App extends Component {
     }
     
     handleSelectAnswer = async (answer) => {
-        this.state.selected_answer = answer;
+        const {state, signal} = this;
+
+        state.selected_answer = answer;
+
+        if (state.quizRole === QUIZ_ROLE_PLAYER) {
+            await signal.sendMessage(state.game_status.host_player_id, "answer,"+answer);
+        }
     };
 
     handleSetQuestion = async (e) => {
-        console.log('handleSetQuestion:: e', e);
-        console.log('e.target.value', e.target.value);
+        // console.log('handleSetQuestion:: e', e);
+        // console.log('e.target.value', e.target.value);
 
         this.state.next_question = e.target.value;
     };
 
     handleSetQuestionOptions = async (index, value) => {
-        console.log('handleSetQuestionOptions:: index, value', index, value);
+        // console.log('handleSetQuestionOptions:: index, value', index, value);
 
         this.state.next_question_answers[index] = value;
     };
 
     handleSendNextQuestion = async () => {
-        await this.handleReceiveQuestionFromHost(this.state.next_question, this.state.next_question_answers);
+        const {state, signal} = this;
+
+        await this.handleReceiveQuestionFromHost(state.next_question, state.next_question_answers);
+
+        await this.setChannelAttribute('question', {question: state.next_question, question_answers: state.next_question_answers});
     };
 
     handleSendQuestionAnswer = async () => {
+        const {state} = this;
 
+        if (!state.selected_answer) {
+            return console.log('Please select answer');
+        }
+
+        await this.setChannelAttribute('question_answer', this.state.selected_answer);
     };
 
     handleReceiveQuestionFromHost = async (question, question_answers) => {
-        console.log('handleReceiveQuestionFromHost:: question, question_answers', question, question_answers)
+        // console.log('handleReceiveQuestionFromHost:: question, question_answers', question, question_answers)
         this.setState({
             question, question_answers
         })
@@ -991,36 +1007,42 @@ export default class App extends Component {
 							<button onClick={e => this.startGame(QUIZ_ROLE_AUDIENCE)} id="audience-button" className={"button " + ((!state.quizIsOn || state.quizRole == QUIZ_ROLE_AUDIENCE) && ' is-link' || '')}>{state.quizIsOn && state.quizRole == QUIZ_ROLE_AUDIENCE ? 'stop' : 'start'}</button>
 						</div>
 					</div>
-					<div className="field">
-						<div className="control">
-							<button onClick={game_status.state === GAME_STATUS_STARTED && this.handleEndQuiz || this.handleStartQuiz} className={"button" + ((state.quizRole === QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && game_status.state === GAME_STATUS_STARTED ? 'End Quiz' : 'Start Quiz'}</button>
-						</div>
-					</div>
-					<div className="field">
-						<div className="control">
-							<textarea onChange={this.handleSetQuestion} style={{width: "-webkit-fill-available", height: "10em"}}></textarea>
-						</div>
-					</div>
-					<div className="field">
-						<label className="label">Answer Choices</label>
-                        {_.times(4).map(id => {
-                            return (
-                                <div key={id} className="control">
-                                    Option {'ABCD'.charAt(id)}: <textarea key={id} onChange={e => this.handleSetQuestionOptions(id, e.target.value)} value={state.next_question_answers[id]} className="input" type="text" placeholder={`Input Question Answer Option ${'ABCD'.charAt(id)}`} />
+                    {state.quizRole === QUIZ_ROLE_HOST ? (
+                        <div className="field">
+                            <div className="control">
+                                <button onClick={game_status.state === GAME_STATUS_STARTED && this.handleEndQuiz || this.handleStartQuiz} className={"button" + ((state.quizRole === QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && game_status.state === GAME_STATUS_STARTED ? 'End Quiz' : 'Start Quiz'}</button>
+                            </div>
+                        </div>
+                    ) : "" }
+                    {state.quizRole === QUIZ_ROLE_HOST && game_status.state === GAME_STATUS_STARTED ? (
+                        <div>
+                            <div className="field">
+                                <div className="control">
+                                    <textarea onChange={this.handleSetQuestion} style={{width: "-webkit-fill-available", height: "10em"}}></textarea>
                                 </div>
-                            )
-                        })}
-					</div>
-					<div className="field">
-						<div className="control">
-							<button onClick={this.handleSendNextQuestion} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Send Question</button>
-						</div>
-					</div>
-					<div className="field">
-						<div className="control">
-							<button onClick={this.handleSendQuestionAnswer} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Give Answer</button>
-						</div>
-					</div>
+                            </div>
+                            <div className="field">
+                                <label className="label">Answer Choices</label>
+                                {_.times(4).map(id => {
+                                    return (
+                                        <div key={id} className="control">
+                                            Option {'ABCD'.charAt(id)}: <textarea key={id} onChange={e => this.handleSetQuestionOptions(id, e.target.value)} value={state.next_question_answers[id]} className="input" type="text" placeholder={`Input Question Answer Option ${'ABCD'.charAt(id)}`} />
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <div className="field">
+                                <div className="control">
+                                    <button onClick={this.handleSendNextQuestion} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Send Question</button>
+                                </div>
+                            </div>
+                            <div className="field">
+                                <div className="control">
+                                    <button onClick={this.handleSendQuestionAnswer} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Give Answer</button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : ""}
 				</div>
 				<div className="" style={{width: "-webkit-fill-available", height: "fit-content", _border: "1px solid yellow"}}>
                     {state.quizIsOn ? (
@@ -1051,8 +1073,11 @@ export default class App extends Component {
                             </div>
                         </div>
                     ) : (
-                        <div>
-                            aaaa
+                        <div style={{height: "-webkit-fill-available", fontSize: "5em", textAlign: "center"}}>
+                            WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+                            A Quiz Game <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+                            via Agora Video <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+                            and Agora Signaling SDK
                         </div>
                     )}
 				</div>
