@@ -187,6 +187,14 @@ export default class App extends Component {
 
                     this.setupVideoPanels();
                 }
+                else if (key === "question") {
+                    const {question, question_answers} = val;
+
+                    this.setState({question, question_answers});
+                }
+                else if (key === "question_answer") {
+                    this.setState({answer_from_host: val});
+                }
             // }, 1000);
 		});
 
@@ -1050,7 +1058,7 @@ export default class App extends Component {
                     {state.quizIsOn ? (
                         <div>
                             {state.question ? (
-                                <QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
+                                <QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
                             ) : ""}
                             <div className="game-status" style={{ display: "block", margin: ".5em", fontSize: "2em"}}>
                                 {(() => {
