@@ -24,6 +24,8 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
 let GAME_ID = 'qVf3aoWiX';
+const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
+
 
 console.log('PLAYER_ID', PLAYER_ID, 'GAME_STATUS_WAIT_FOR_PLAYERS', GAME_STATUS_WAIT_FOR_PLAYERS, 'GAME_STATUS_STARTED', GAME_STATUS_STARTED, 'GAME_STATUS_ENDED', GAME_STATUS_ENDED);
 
@@ -56,7 +58,9 @@ export default class App extends Component {
 				playbackTestOn: false,
 				windowList: [],
 				videos_on: [],
-				game_status: {}
+                game_status: {},
+                next_question: "",
+                next_question_answers: [],
 			};
 		}
 		this.enableAudioMixing = false;
@@ -602,6 +606,9 @@ export default class App extends Component {
         delete state.quizIsOn;
         delete state.quizRole;
         delete state.video_stream_id;
+
+        state.next_question = "";
+        state.next_question_answers = [];
     }
 
 	startNewGame = async () => {
@@ -785,7 +792,35 @@ export default class App extends Component {
     
     handleSelectAnswer = async (answer) => {
         this.state.selected_answer = answer;
-    }
+    };
+
+    handleSetQuestion = async (e) => {
+        console.log('handleSetQuestion:: e', e);
+        console.log('e.target.value', e.target.value);
+
+        this.state.next_question = e.target.value;
+    };
+
+    handleSetQuestionOptions = async (index, value) => {
+        console.log('handleSetQuestionOptions:: index, value', index, value);
+
+        this.state.next_question_answers[index] = value;
+    };
+
+    handleSendNextQuestion = async () => {
+        await this.handleReceiveQuestionFromHost(this.state.next_question, this.state.next_question_answers);
+    };
+
+    handleSendQuestionAnswer = async () => {
+
+    };
+
+    handleReceiveQuestionFromHost = async (question, question_answers) => {
+        console.log('handleReceiveQuestionFromHost:: question, question_answers', question, question_answers)
+        this.setState({
+            question, question_answers
+        })
+    };
 
 	render() {
         const { state } = this;
@@ -961,14 +996,50 @@ export default class App extends Component {
 							<button onClick={game_status.state === GAME_STATUS_STARTED && this.handleEndQuiz || this.handleStartQuiz} className={"button" + ((state.quizRole === QUIZ_ROLE_HOST) && ' is-link' || '')}>{state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && game_status.state === GAME_STATUS_STARTED ? 'End Quiz' : 'Start Quiz'}</button>
 						</div>
 					</div>
+					<div className="field">
+						<div className="control">
+							<textarea onChange={this.handleSetQuestion} style={{width: "-webkit-fill-available", height: "10em"}}></textarea>
+						</div>
+					</div>
+					<div className="field">
+						<label className="label">Answer Choices</label>
+                        {_.times(4).map(id => {
+                            return (
+                                <div key={id} className="control">
+                                    Option {'ABCD'.charAt(id)}: <textarea key={id} onChange={e => this.handleSetQuestionOptions(id, e.target.value)} value={state.next_question_answers[id]} className="input" type="text" placeholder={`Input Question Answer Option ${'ABCD'.charAt(id)}`} />
+                                </div>
+                            )
+                        })}
+					</div>
+					<div className="field">
+						<div className="control">
+							<button onClick={this.handleSendNextQuestion} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Send Question</button>
+						</div>
+					</div>
+					<div className="field">
+						<div className="control">
+							<button onClick={this.handleSendQuestionAnswer} className={"button " + ((state.quizIsOn && state.quizRole == QUIZ_ROLE_HOST) && ' is-link' || '')}>Give Answer</button>
+						</div>
+					</div>
 				</div>
-				<div className="" style={{width: "-webkit-fill-available", height: "fit-content", border: "1px solid yellow"}}>
-                    <QuestionPanel game_status={game_status} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
-                            <div className="" style={{ display: "block", margin: ".5em"}}>
-                                Game Status: 
+				<div className="" style={{width: "-webkit-fill-available", height: "fit-content", _border: "1px solid yellow"}}>
+                    {state.quizIsOn ? (
+                        <div>
+                            {state.question ? (
+                                <QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
+                            ) : ""}
+                            <div className="game-status" style={{ display: "block", margin: ".5em", fontSize: "2em"}}>
+                                {(() => {
+                                    if (state.quizIsOn) {
+                                        return QUIZ_STATUS_TEXT[game_status.state];
+                                    }
+                                    else {
+                                        return "Choose if you wan to be the Host, Contestant or Audience";
+                                    }
+                                })()}
                             </div>
-						{state.quizIsOn ? (
-                                    <div className="column is-three-quarters window-container" style={{  }}>
+                            <div style={{height: "250px", animationName: "example", animationDuration: "4s", _border: "1px dashed red", overflow: "hidden"}}>
+                                <div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
                                     {['host', 'player1', 'player2', 'player3'].map((item, key) => (
                                         <Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
                                     ))}
@@ -976,9 +1047,14 @@ export default class App extends Component {
                                     {/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
                                     {/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
-                                </div>
-                        ) : ""}
-
+                                </div>                                    
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            aaaa
+                        </div>
+                    )}
 				</div>
 			</div>
             </div>
