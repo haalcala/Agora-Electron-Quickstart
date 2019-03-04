@@ -66,4 +66,9 @@ html, body {
 
 .selected {
   border: 1px solid red;
+  border-radius: .2em
+}
+
+.selected:focus {
+    outline: none;
 }

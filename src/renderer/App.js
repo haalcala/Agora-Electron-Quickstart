@@ -781,7 +781,11 @@ export default class App extends Component {
 			return '1 week ago';
 		}
 		return 'on ' + system_date;
-	}
+    }
+    
+    handleSelectAnswer = async (answer) => {
+        this.state.selected_answer = answer;
+    }
 
 	render() {
         const { state } = this;
@@ -958,29 +962,22 @@ export default class App extends Component {
 						</div>
 					</div>
 				</div>
-				<div className="tile is-ancestor">
-					<div className="tile is-vertical is-parent" style={{ border: "1px dashed green", bbackground: "lightgreen" }}>
-						<div className="tile is-child" style={{ position: "relative" }}>
-							<QuestionPanel game_status={game_status}></QuestionPanel>
-						</div>
+				<div className="" style={{width: "-webkit-fill-available", height: "fit-content", border: "1px solid yellow"}}>
+                    <QuestionPanel game_status={game_status} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
+                            <div className="" style={{ display: "block", margin: ".5em"}}>
+                                Game Status: 
+                            </div>
 						{state.quizIsOn ? (
-							<div className="tile is-child" style={{ border: "1px dashed blue", display: "contents" }}>
-								<div className="container box" style={{ padding: ".2rem", border: "1px solid black" }}>
-									<div style={{ height: "250px", overflow: "hidden", padding: "3px", animationName: "example", animationDuration: "1s" }}>
-										<div className="column is-three-quarters window-container" style={{ columnGap: ".1rem" }}>
-											{['host', 'player1', 'player2', 'player3'].map((item, key) => (
-												<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
-											))}
+                                    <div className="column is-three-quarters window-container" style={{  }}>
+                                    {['host', 'player1', 'player2', 'player3'].map((item, key) => (
+                                        <Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
+                                    ))}
 
-											{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
+                                    {/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
-											{/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
-										</div>
-									</div>
-								</div>
-							</div>
-						) : ""}
-					</div>
+                                    {/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
+                                </div>
+                        ) : ""}
 
 				</div>
 			</div>
