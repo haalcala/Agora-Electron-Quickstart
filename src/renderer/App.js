@@ -9,6 +9,7 @@ import AgoraRtcEngine from 'agora-electron-sdk';
 import { List } from 'immutable';
 import path from 'path';
 import os from 'os'
+import _ from 'lodash'
 
 import { videoProfileList, audioProfileList, audioScenarioList, APP_ID, SHARE_ID } from '../utils/settings'
 import base64Encode from '../utils/base64'
@@ -960,7 +961,7 @@ export default class App extends Component {
 				<div className="tile is-ancestor">
 					<div className="tile is-vertical is-parent" style={{ border: "1px dashed green", bbackground: "lightgreen" }}>
 						<div className="tile is-child" style={{ position: "relative" }}>
-							<QuestionPanel></QuestionPanel>
+							<QuestionPanel game_status={game_status}></QuestionPanel>
 						</div>
 						{state.quizIsOn ? (
 							<div className="tile is-child" style={{ border: "1px dashed blue", display: "contents" }}>

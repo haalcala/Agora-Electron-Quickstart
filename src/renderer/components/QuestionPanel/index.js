@@ -2,6 +2,7 @@ import React from 'react';
 // import {chunk, merge} from 'lodash';
 // import PropTypes from 'prop-types';
 // import './index.css';
+import _ from 'lodash';
 
 class QuestionPanel extends React.Component {
 	state = {
@@ -12,15 +13,23 @@ class QuestionPanel extends React.Component {
 				"dfasdfasfasdfasdfsafasdfasdf " +
 				"asdfasdfafasdfsadf " +
 				"adfasdfasfsdf ",
-		options : ['A. Small', 'B. Medium', 'C. Large', 'D. None of the above']
+		options : ['A. Small', 'B. Medium', 'C. Large', 'D. None of the above'],
 	}
 
-	handleAnswerClick = (e) => {
-		console.log(e);
+	constructor(props) {
+		super();
+		
+		this.state.game_status = props.game_status;
+	}
+
+	selectAnswer = (answer) => {
+		console.log(answer);
+
+		this.setState({selected_answer : answer});
 	}
 
 	render() {
-		const {question, options} = this.state;
+		const {question, options, selected_answer} = this.state;
 
 		return (
 			<div className="card" style={{ position: "absolute", border: "1px solid red", width: "100%", height: "100%", padding: "1em"}}>
@@ -38,12 +47,9 @@ class QuestionPanel extends React.Component {
 					<div style={{visibility: "hidden"}}>1</div>
 					<div className="card" style={{border: "1px solid green", height: "23em"}}>
 						<div style={{margin: "1em"}}>
-							{options.map(option => {
+							{_.times(4).map(i => {
 								return (
-									<div>
-										<button className="answer-item is-link" onClick={this.handleAnswerClick}>{option}</button>
-										<div className="" style={{width: "30em", margin: "auto", display: "block"}}/>
-									</div>
+									<button id={i} className={"answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => this.selectAnswer(i)}>{options[i]}</button>
 								);
 							})}
 						</div>
