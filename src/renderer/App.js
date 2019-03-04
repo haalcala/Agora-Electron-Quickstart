@@ -574,7 +574,9 @@ export default class App extends Component {
 			console.log('handleStartQuiz:: invalid game state. Expecting', GAME_STATUS_WAIT_FOR_PLAYERS, 'but got', game_status.state);
 		}
 
-		this.setState({});
+        this.setState({});
+        
+        await this.setGameStatus();
 	};
 
 	handleEndQuiz = () => {
