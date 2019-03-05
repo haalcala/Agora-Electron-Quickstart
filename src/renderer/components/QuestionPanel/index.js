@@ -23,6 +23,10 @@ class QuestionPanel extends React.Component {
 	}
 
 	selectAnswer = async (answer) => {
+        if (this.props.answer_from_host) {
+            return;
+        }
+
         console.log(answer);
         
         this.props.onSelectAnswer(answer)

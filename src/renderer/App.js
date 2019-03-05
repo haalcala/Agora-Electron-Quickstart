@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = '1R1xOFUj1';
+let GAME_ID = 'vuCbj_DPI';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -195,6 +195,8 @@ export default class App extends Component {
                 }
 
                 // this.setupVideoPanels();
+
+                this.setState({});
             }
             else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
                 const { game_status } = state;
@@ -699,7 +701,7 @@ export default class App extends Component {
 
             let start = new Date();
 
-            let game_role;
+            let game_role, reason;
 
             this.setState({current_state: "Joining game ... Please wait."});
 
@@ -707,14 +709,30 @@ export default class App extends Component {
                 const {state} = this;
 
                 if (state.game_status) {
+                    let player_count = 0;
+
                     _.times(4).map(i => {
                         if (state.game_status[`player${i+1}_player_id`] === PLAYER_ID) {
                             game_role = `player${i+1}`
                         }
+
+                        if (state.game_status[`player${i+1}_player_id`]) {
+                            player_count++;
+                        }
                     });
+
+                    if (state.game_status && state.game_status.state === GAME_STATUS_STARTED) {
+                        reason = "Game already started";
+                    }
+                    else if (state.game_status && state.game_status.state === GAME_STATUS_ENDED) {
+                        reason = "Game already ended";
+                    }
+                    else if (player_count === 3) {
+                        reason = "Game is full";
+                    }
                 }
                 
-                if (game_role || (new Date() - start) >= 10000) {
+                if (reason || game_role || (new Date() - start) >= 10000) {
                     console.log('joinGame:: state.game_status', state.game_status);
 
                     if (game_role) {
@@ -722,12 +740,14 @@ export default class App extends Component {
 
                         this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID, current_state: `Joined and awaiting quiz start from host.` });
 
+                        // this.handleJoin();
+
                         await this.setupVideoPanels();
                     }
                     else {
-                        console.log('ERROR: Unable to join game');
+                        console.log('ERROR: Unable to join game' + (reason ? ` (Reason: ${reason})` : ""));
 
-                        this.setState({current_state: 'ERROR: Unable to join game'});
+                        this.setState({current_state: 'ERROR: Unable to join game' + (reason ? ` (Reason: ${reason})` : "")});
                     }
 
                     clearInterval(timer_id);
@@ -1119,7 +1139,7 @@ export default class App extends Component {
 							})()}
 						</div>
 						{state.quizIsOn ? (
-							<div style={{height: "250px", animationName: "example", animationDuration: "4s", _border: "1px dashed red", overflow: "hidden"}}>
+							<div style={{height: "250px", animationName: "example", animationDuration: "2s", _border: "1px dashed red", overflow: "hidden"}}>
 								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
 									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
 										<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} player_id={state.game_status[`${item}_player_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
