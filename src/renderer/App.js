@@ -1066,7 +1066,6 @@ export default class App extends Component {
 								via Agora Video <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
 								and Agora Signaling SDK
 							</div>
-
 						)}
 						</div>
 						<div className="game-status" style={{ display: "block", margin: ".5em", fontSize: "2em"}}>
@@ -1091,7 +1090,6 @@ export default class App extends Component {
 									{/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
 								</div>                                    
 							</div>
-
 						) : ""}
 					</div>
 				</div>
