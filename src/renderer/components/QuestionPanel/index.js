@@ -31,7 +31,8 @@ class QuestionPanel extends React.Component {
 	}
 
 	render() {
-		const {question, options, selected_answer} = this.state;
+        const {question, options, selected_answer} = this.state;
+        const {answer_from_host} = this.props;
 
 		return (
 			<div className="card" style={{ border: "1px solid red", width: "100%", height: "100%", padding: "1em", height: "-webkit-fill-available"}}>
@@ -48,7 +49,7 @@ class QuestionPanel extends React.Component {
 						<div style={{margin: "1em"}}>
 							{_.times(4).map(i => {
 								return (
-									<button key={i} className={"answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => this.selectAnswer(i)}>{this.props.answer_from_host ? (this.props.answer_from_host === this.state.selected_answer ? "✔︎" : "✘") : ""} {`${'ABCD'.charAt(i)}.  ${options[i]}`}</button>
+                                    <AnswerItem selected_answer={selected_answer} answer_from_host={answer_from_host} i={i} option={options[i]} selectAnswer={this.selectAnswer}></AnswerItem>
 								);
 							})}
 						</div>
@@ -56,6 +57,23 @@ class QuestionPanel extends React.Component {
 			</div>
 		);
 	}
+}
+
+class AnswerItem extends React.Component {
+    render() {
+        const {selected_answer, answer_from_host, i, option, selectAnswer} = this.props;
+
+        return (
+            <div className={"column answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => selectAnswer(i)} >
+                <div style={{display: "inline", width: "1em"}}>
+                {answer_from_host ? (selected_answer === i ? (answer_from_host === selected_answer ? "✔︎" : "✘") : " ") : " "} 
+                </div>
+                <div key={i} style={{display: "inline", marginLeft: ".2em"}}>
+                {`${'ABCD'.charAt(i)}.  ${option}`}
+                </div>
+            </div>
+        )
+    }
 }
 
 export default QuestionPanel;
