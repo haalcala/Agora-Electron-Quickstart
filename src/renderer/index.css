@@ -93,3 +93,18 @@ html, body {
     75%  {color:green; left:0px; top:200px;}
     100% {color:red; left:0px; top:0px;}
   }
+
+.game_role {
+    _border: 1px solid green;
+    background: white;
+    position: relative;
+    /* margin: auto; */
+    display: block;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    height: fit-content;
+    left: 0;
+    bottom: 1em;
+    width: -webkit-fill-available;
+}

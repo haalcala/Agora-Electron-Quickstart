@@ -66,10 +66,10 @@ class AnswerItem extends React.Component {
         return (
             <div className={"column answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => selectAnswer(i)} >
                 <div style={{display: "inline", width: "1em"}}>
-                {answer_from_host ? (selected_answer === i ? (answer_from_host === selected_answer ? "✔︎" : "✘") : " ") : " "} 
+                    {answer_from_host ? (selected_answer === i ? (answer_from_host === selected_answer ? "✔︎" : "✘") : " ") : " "} 
                 </div>
                 <div key={i} style={{display: "inline", marginLeft: ".2em"}}>
-                {`${'ABCD'.charAt(i)}.  ${option}`}
+                    {`${'ABCD'.charAt(i)}.  ${option}`}
                 </div>
             </div>
         )

@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = '8kjp4mBp5';
+let GAME_ID = '1R1xOFUj1';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -168,11 +168,12 @@ export default class App extends Component {
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
+            console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: key, val, op, ...args', key, val, op, ...args);
+
             if (op === "set") {
                 return;
             }
 
-			console.log('---===>>> signal.channelEmitter.on(\'onChannelAttrUpdated\':: key, val, op, ...args', key, val, op, ...args);
 
 			const { state } = this;
 
@@ -703,6 +704,8 @@ export default class App extends Component {
             this.setState({current_state: "Joining game ... Please wait."});
 
             let timer_id = setInterval(async () => {
+                const {state} = this;
+
                 if (state.game_status) {
                     _.times(4).map(i => {
                         if (state.game_status[`player${i+1}_player_id`] === PLAYER_ID) {
@@ -712,10 +715,12 @@ export default class App extends Component {
                 }
                 
                 if (game_role || (new Date() - start) >= 10000) {
+                    console.log('joinGame:: state.game_status', state.game_status);
+
                     if (game_role) {
                         console.log('Successfully joined game as', game_role);
 
-                        this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID });
+                        this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID, current_state: `Joined and awaiting quiz start from host.` });
 
                         await this.setupVideoPanels();
                     }
@@ -1096,10 +1101,10 @@ export default class App extends Component {
 							<QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
 						) : (
 							<div style={{height: "-webkit-fill-available", fontSize: "5em", textAlign: "center"}}>
-								WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+								{/* WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
 								A Quiz Game <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
 								via Agora Video <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
-								and Agora Signaling SDK
+								and Agora Signaling SDK */}
 							</div>
 						)}
 						</div>
@@ -1117,7 +1122,7 @@ export default class App extends Component {
 							<div style={{height: "250px", animationName: "example", animationDuration: "4s", _border: "1px dashed red", overflow: "hidden"}}>
 								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
 									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
-										<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
+										<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} player_id={state.game_status[`${item}_player_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
 									))}
 
 									{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
@@ -1173,6 +1178,8 @@ class Window extends Component {
 	// }
 
 	render() {
+        const {player_id} = this.props;
+
         console.log('Window.render:: props', this.props, 'state', this.state);
 
         setTimeout(() => {
@@ -1205,6 +1212,7 @@ class Window extends Component {
                 ) : (
                     <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto"}} src={require('../player.jpg')} />
                 )}
+                <div className="game_role">{this.props.game_role.charAt(0).toUpperCase() + this.props.game_role.slice(1) + (player_id === PLAYER_ID ? " (ME)": "")}</div>
 			</div>
 		)
 	}
