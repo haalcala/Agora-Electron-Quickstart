@@ -1055,41 +1055,43 @@ export default class App extends Component {
                     ) : ""}
 				</div>
 				<div className="" style={{width: "-webkit-fill-available", height: "fit-content", _border: "1px solid yellow"}}>
-                    {state.quizIsOn ? (
-                        <div>
-                            {state.question ? (
-                                <QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
-                            ) : ""}
-                            <div className="game-status" style={{ display: "block", margin: ".5em", fontSize: "2em"}}>
-                                {(() => {
-                                    if (state.quizIsOn) {
-                                        return QUIZ_STATUS_TEXT[game_status.state];
-                                    }
-                                    else {
-                                        return "Choose if you wan to be the Host, Contestant or Audience";
-                                    }
-                                })()}
-                            </div>
-                            <div style={{height: "250px", animationName: "example", animationDuration: "4s", _border: "1px dashed red", overflow: "hidden"}}>
-                                <div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
-                                    {['host', 'player1', 'player2', 'player3'].map((item, key) => (
-                                        <Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
-                                    ))}
+					<div>
+						<div className="" style={{width: "-webkit-fill-available", height: "45em", _border: "1px solid yellow"}}>
+						{state.question ? (
+							<QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
+						) : (
+							<div style={{height: "-webkit-fill-available", fontSize: "5em", textAlign: "center"}}>
+								WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+								A Quiz Game <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+								via Agora Video <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
+								and Agora Signaling SDK
+							</div>
+						)}
+						</div>
+						<div className="game-status" style={{ display: "block", margin: ".5em", fontSize: "2em"}}>
+							{(() => {
+								if (state.quizIsOn) {
+									return QUIZ_STATUS_TEXT[game_status.state];
+								}
+								else {
+									return "Choose if you wan to be the Host, Contestant or Audience";
+								}
+							})()}
+						</div>
+						{state.quizIsOn ? (
+							<div style={{height: "250px", animationName: "example", animationDuration: "4s", _border: "1px dashed red", overflow: "hidden"}}>
+								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
+									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
+										<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} show_icon={!state.game_status[`${item}_video_stream_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
+									))}
 
-                                    {/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
+									{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
-                                    {/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
-                                </div>                                    
-                            </div>
-                        </div>
-                    ) : (
-                        <div style={{height: "-webkit-fill-available", fontSize: "5em", textAlign: "center"}}>
-                            WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
-                            A Quiz Game <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
-                            via Agora Video <div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
-                            and Agora Signaling SDK
-                        </div>
-                    )}
+									{/* {state.localVideoSource ? (<Window harold_trace="3333" uid={state.localVideoSource} rtcEngine={this.rtcEngine} role="localVideoSource"></Window>) : ''} */}
+								</div>                                    
+							</div>
+						) : ""}
+					</div>
 				</div>
 			</div>
             </div>
