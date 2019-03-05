@@ -552,19 +552,12 @@ export default class App extends Component {
 			return this.setState({ quizIsOn: false });
 		}
 
-        // let signal = this.signal = new SignalingClient(APP_ID);
-
-        let signal_session = await signal.login(PLAYER_ID);
-        // // await signal.login(PLAYER_ID);
-
-        // this.subscribeEvents();
+        await signal.login(PLAYER_ID);
 
 		console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
 
 		if (quizRole == QUIZ_ROLE_HOST) {
 			await this.startNewGame();
-
-			// this.handleJoin(); 	
 		}
 		else if (quizRole == QUIZ_ROLE_PLAYER) {
 			await this.joinGame();

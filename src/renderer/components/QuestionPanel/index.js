@@ -49,7 +49,7 @@ class QuestionPanel extends React.Component {
 						<div style={{margin: "1em"}}>
 							{_.times(4).map(i => {
 								return (
-                                    <AnswerItem selected_answer={selected_answer} answer_from_host={answer_from_host} i={i} option={options[i]} selectAnswer={this.selectAnswer}></AnswerItem>
+                                    <AnswerItem key={i} selected_answer={selected_answer} answer_from_host={answer_from_host} i={i} option={options[i]} selectAnswer={this.selectAnswer}></AnswerItem>
 								);
 							})}
 						</div>
