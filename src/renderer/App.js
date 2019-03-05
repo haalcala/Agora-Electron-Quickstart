@@ -23,7 +23,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'qPekXCHmP';
+let GAME_ID = 'qtI5LS27u';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -175,45 +175,43 @@ export default class App extends Component {
 
             console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
             
-            // setTimeout(() => {
-                if (key === 'game_status') {
-                    const game_status = val = JSON.parse(val);
-        
-                    ['host', 'player1', 'player2', 'player3'].map(async game_role => {
-                        if (game_status[game_role + '_player_id'] == PLAYER_ID) {
-                            state.game_role = game_role;
-                        }
-                    });
+            if (key === 'game_status') {
+                const game_status = val = JSON.parse(val);
     
-                    state.game_status = game_status;
-            
-                    if (!state.video_stream_id && state.game_role) {
-                        // this.handleJoin();
+                ['host', 'player1', 'player2', 'player3'].map(async game_role => {
+                    if (game_status[game_role + '_player_id'] == PLAYER_ID) {
+                        state.game_role = game_role;
                     }
-    
-                    this.setupVideoPanels();
-                }
-                else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
-                    const { game_status } = state;
-                    const [game_role, video_stream_id] = val.split(',');
-    
-                    game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
+                });
 
-                    delete state[`${game_role}_video_stream_id`];
-    
-                    this.setGameStatus();
+                state.game_status = game_status;
+        
+                if (!state.video_stream_id && state.game_role) {
+                    // this.handleJoin();
+                }
 
-                    this.setupVideoPanels();
-                }
-                else if (key === "question") {
-                    const {question, question_answers} = val;
+                this.setupVideoPanels();
+            }
+            else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
+                const { game_status } = state;
+                const [game_role, video_stream_id] = val.split(',');
 
-                    this.setState({question, question_answers});
-                }
-                else if (key === "question_answer") {
-                    this.setState({answer_from_host: val});
-                }
-            // }, 1000);
+                game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
+
+                delete state[`${game_role}_video_stream_id`];
+
+                this.setGameStatus();
+
+                this.setupVideoPanels();
+            }
+            else if (key === "question") {
+                const {question, question_answers} = val;
+
+                this.setState({question, question_answers});
+            }
+            else if (key === "question_answer") {
+                this.setState({answer_from_host: val});
+            }
 		});
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
@@ -476,7 +474,7 @@ export default class App extends Component {
 
 	handleScreenSharing = e => {
 		// getWindowInfo and open Modal
-		let list = this.rtcEngine.getScreenvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvInfo();
+		let list = this.rtcEngine.getScreenInfo();
 
 		let windowList = list.map(item => {
 			return {
@@ -697,13 +695,19 @@ export default class App extends Component {
 
             console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
 
-            // channel.
+            let start = new Date();
 
-            // let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+            let timer_id = setInterval(() => {
+                if (state.game_status) {
 
-            // console.log('1111 result', result);
 
-            // this.handleJoin();
+                    return clearInterval(timer_id);
+                }
+
+                if ((new Date() - start) > 10000) {
+                    clearInterval(timer_id);
+                }
+            }, 100);
         }
         catch (e) {
             console.log('joinGame:: ERROR:', e);
