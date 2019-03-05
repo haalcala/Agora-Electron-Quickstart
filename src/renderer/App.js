@@ -641,7 +641,7 @@ export default class App extends Component {
 
 		const { game_status } = state;
 
-		GAME_ID = GAME_ID || shortid.generate();
+		GAME_ID = shortid.generate();
 
 		console.log('GAME_ID', GAME_ID);
 
