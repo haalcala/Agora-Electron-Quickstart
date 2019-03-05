@@ -92,7 +92,22 @@ export default class App extends Component {
 		signal.sessionEmitter.on('onMessageInstantReceive', (account, uid, msg) => {
 			console.log('---===>>> signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
 
-			// this.onReceiveMessage(account, msg, 'instant');
+            // this.onReceiveMessage(account, msg, 'instant');
+            
+			const { state } = this;
+            const { game_status } = state;
+            
+            const [command, val] = msg.split(",");
+
+            if (command === 'answer') {
+                _.times(4).map(i => {
+                    if (game_status[`player${i+1}_player_id`] === account) {
+                        state[`player${i+1}_answer`] = val;
+
+                        console.log(`player${i+1}_answer`, val);
+                    }
+                });
+            }
 		});
 		signal.channelEmitter.on('onMessageChannelReceive', (account, uid, msg) => {
 			console.log('---===>>> signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
