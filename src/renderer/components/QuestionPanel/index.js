@@ -48,7 +48,7 @@ class QuestionPanel extends React.Component {
 						<div style={{margin: "1em"}}>
 							{_.times(4).map(i => {
 								return (
-									<button key={i} className={"answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => this.selectAnswer(i)}>{`${'ABCD'.charAt(i)}.  ${options[i]}`}</button>
+									<button key={i} className={"answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => this.selectAnswer(i)}>{this.props.answer_from_host ? (this.props.answer_from_host === this.state.selected_answer ? "✔︎" : "✘") : ""} {`${'ABCD'.charAt(i)}.  ${options[i]}`}</button>
 								);
 							})}
 						</div>
