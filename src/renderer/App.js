@@ -173,7 +173,7 @@ export default class App extends Component {
 
 			const { state } = this;
 
-            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', JSON.stringify(state));
+            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
             
             // setTimeout(() => {
                 if (key === 'game_status') {
@@ -641,7 +641,7 @@ export default class App extends Component {
 
 		const { game_status } = state;
 
-		GAME_ID = shortid.generate();
+		GAME_ID = GAME_ID || shortid.generate();
 
 		console.log('GAME_ID', GAME_ID);
 
@@ -660,11 +660,13 @@ export default class App extends Component {
 
 			game_status.host_player_id = PLAYER_ID;
 
-			console.log('Created a new game successfully.');
+            console.log('Created a new game successfully.');
 
-			await this.setGameStatus();
-
-			this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
+            signal.channelClearAttr(async () => {
+                await this.setGameStatus();
+    
+                this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
+            });
 		}
 		else {
 			console.log('ERROR: Channel', GAME_ID, 'is not empty or owned by someone else.');
@@ -678,7 +680,7 @@ export default class App extends Component {
         
         this.setupNewGame();
 
-		GAME_ID = GAME_ID || state.GAME_ID;
+		GAME_ID = state.GAME_ID;
 
 		if (!GAME_ID) {
 			console.log("ERROR:: Required GAME_ID missing");
@@ -688,26 +690,24 @@ export default class App extends Component {
 
 		this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID });
 
-		// setTimeout(async () => {
-			try {
-				const channel = await signal.join(GAME_ID);
+        try {
+            const channel = await signal.join(GAME_ID);
 
-				this.setState({ channel });
+            this.setState({ channel });
 
-				console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
+            console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
 
-				// channel.
+            // channel.
 
-				// let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
+            // let result = await signal.invoke('io.agora.signal.channel_query_userlist', {name: GAME_ID});
 
-				// console.log('1111 result', result);
+            // console.log('1111 result', result);
 
-				// this.handleJoin();
-			}
-			catch (e) {
-				console.log('joinGame:: ERROR:', e);
-			}
-		// }, 1000);
+            // this.handleJoin();
+        }
+        catch (e) {
+            console.log('joinGame:: ERROR:', e);
+        }
 	}
 
 	showQuestion = () => {
