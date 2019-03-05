@@ -662,7 +662,7 @@ export default class App extends Component {
 
             console.log('Created a new game successfully.');
 
-            signal.channelClearAttr(async () => {
+            channel.channelClearAttr(async () => {
                 await this.setGameStatus();
     
                 this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
