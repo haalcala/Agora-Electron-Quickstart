@@ -213,7 +213,7 @@ export default class App extends Component {
             else if (key === "question") {
                 const {question, question_answers} = val;
 
-                this.setState({question, question_answers});
+                this.setState({question, question_answers, answer_from_host: "", answer_from_host: ""});
             }
             else if (key === "question_answer") {
                 this.setState({answer_from_host: val});
@@ -881,6 +881,8 @@ export default class App extends Component {
         // console.log('handleSetQuestionOptions:: index, value', index, value);
 
         this.state.next_question_answers[index] = value;
+
+        this.setState({});
     };
 
     handleSendNextQuestion = async () => {
