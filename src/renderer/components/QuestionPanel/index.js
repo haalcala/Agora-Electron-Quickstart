@@ -35,6 +35,8 @@ class QuestionPanel extends React.Component {
 	}
 
 	render() {
+        console.log('QuestionPanel.render::');
+        
         const {question, options, selected_answer} = this.state;
         const {answer_from_host} = this.props;
 

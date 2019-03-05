@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'vuCbj_DPI';
+let GAME_ID = 'k70gvpL0f';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -213,7 +213,7 @@ export default class App extends Component {
             else if (key === "question") {
                 const {question, question_answers} = val;
 
-                this.setState({question, question_answers, answer_from_host: "", answer_from_host: ""});
+                this.setState({question, question_answers, answer_from_host: "", answer_from_host: "", selected_answer: ""});
             }
             else if (key === "question_answer") {
                 this.setState({answer_from_host: val});
@@ -911,6 +911,8 @@ export default class App extends Component {
     };
 
 	render() {
+        console.log("App.render::");
+        
         const { state } = this;
         const { game_status } = state;
 
