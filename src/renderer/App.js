@@ -11,6 +11,8 @@ import path from 'path';
 import os from 'os'
 import _ from 'lodash'
 
+import {Alert} from 'react-bootstrap'
+
 import { videoProfileList, audioProfileList, audioScenarioList, APP_ID, SHARE_ID } from '../utils/settings'
 import base64Encode from '../utils/base64'
 import WindowPicker from './components/WindowPicker/index.js'
@@ -18,12 +20,13 @@ import QuestionPanel from './components/QuestionPanel/index.js'
 import SignalingClient from '../main/signalingClient';
 
 import shortid from 'shortid';
+import { watchFile } from 'fs';
 
 const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host', 'player', 'audience', shortid.generate()];
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'qtI5LS27u';
+let GAME_ID = '8kjp4mBp5';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -147,7 +150,7 @@ export default class App extends Component {
 
 			console.log('game_status.state', game_status.state);
 
-			if (game_status.host === PLAYER_ID) {
+			if (game_status.host_player_id === PLAYER_ID) {
 				if (game_status.state === GAME_STATUS_WAIT_FOR_PLAYERS) {
 					let next_player;
 
@@ -164,7 +167,7 @@ export default class App extends Component {
 			}
 		});
 
-		signal.channelEmitter.on('onChannelAttrUpdated', (key, val, op, ...args) => {
+		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
             if (op === "set") {
                 return;
             }
@@ -190,7 +193,7 @@ export default class App extends Component {
                     // this.handleJoin();
                 }
 
-                this.setupVideoPanels();
+                // this.setupVideoPanels();
             }
             else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
                 const { game_status } = state;
@@ -686,8 +689,6 @@ export default class App extends Component {
 			return;
 		}
 
-		this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID });
-
         try {
             const channel = await signal.join(GAME_ID);
 
@@ -697,14 +698,33 @@ export default class App extends Component {
 
             let start = new Date();
 
-            let timer_id = setInterval(() => {
+            let game_role;
+
+            this.setState({current_state: "Joining game ... Please wait."});
+
+            let timer_id = setInterval(async () => {
                 if (state.game_status) {
-
-
-                    return clearInterval(timer_id);
+                    _.times(4).map(i => {
+                        if (state.game_status[`player${i+1}_player_id`] === PLAYER_ID) {
+                            game_role = `player${i+1}`
+                        }
+                    });
                 }
+                
+                if (game_role || (new Date() - start) >= 10000) {
+                    if (game_role) {
+                        console.log('Successfully joined game as', game_role);
 
-                if ((new Date() - start) > 10000) {
+                        this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID });
+
+                        await this.setupVideoPanels();
+                    }
+                    else {
+                        console.log('ERROR: Unable to join game');
+
+                        this.setState({current_state: 'ERROR: Unable to join game'});
+                    }
+
                     clearInterval(timer_id);
                 }
             }, 100);
@@ -1089,7 +1109,7 @@ export default class App extends Component {
 									return QUIZ_STATUS_TEXT[game_status.state];
 								}
 								else {
-									return "Choose if you wan to be the Host, Contestant or Audience";
+									return state.current_state || "Choose if you wan to be the Host, Contestant or Audience";
 								}
 							})()}
 						</div>
