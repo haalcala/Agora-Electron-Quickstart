@@ -99,6 +99,8 @@ export default class App extends Component {
             
             const [command, val] = msg.split(",");
 
+            console.log('state', state, 'command', command, 'val', val);
+
             if (command === 'answer') {
                 _.times(4).map(i => {
                     if (game_status[`player${i+1}_player_id`] === account) {
