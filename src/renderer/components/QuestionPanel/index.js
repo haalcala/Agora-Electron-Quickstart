@@ -15,7 +15,7 @@ class QuestionPanel extends React.Component {
 		super();
 		
         this.state.game_status = props.game_status;
-
+        this.state.selected_answer = props.selected_answer;
 
         console.log('QuestionPanel.constructor:: props', props);
 	}
@@ -35,7 +35,9 @@ class QuestionPanel extends React.Component {
 	render() {
         console.log('QuestionPanel.render::');
 
-        const {answer_from_host, question, question_answers, selected_answer} = this.props;
+        const {selected_answer} = this.state;
+
+        const {answer_from_host, question, question_answers} = this.props;
 
 		return (
 			<div className="card" style={{ border: "1px solid red", width: "100%", height: "100%", padding: "1em", height: "-webkit-fill-available"}}>
@@ -66,8 +68,10 @@ class AnswerItem extends React.Component {
     render() {
         const {selected_answer, answer_from_host, i, option, selectAnswer} = this.props;
 
+        console.log("selected_answer", selected_answer, "answer_from_host", answer_from_host, "i", i, "option", option, "selectAnswer", selectAnswer);
+
         return (
-            <div className={"column answer-item is-link" + (selected_answer === i ? " selected": "")} onClick={() => selectAnswer(i)} >
+            <div className={"column answer-item is-link" + (selected_answer == i ? " selected": "")} onClick={() => selectAnswer(i)} >
                 <div style={{display: "inline", width: "1em"}}>
                     {answer_from_host ? (selected_answer === i ? (answer_from_host === selected_answer ? "✔︎" : "✘") : " ") : " "} 
                 </div>

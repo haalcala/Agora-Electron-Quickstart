@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'UrJig_jUO';
+let GAME_ID = 'n13jVCLP-';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -914,7 +914,7 @@ export default class App extends Component {
         console.log("App.render::");
 
         const { state } = this;
-        const { game_status } = state;
+        const { game_status, selected_answer } = state;
 
 		let windowPicker
 
@@ -1122,7 +1122,7 @@ export default class App extends Component {
 					<div>
 						<div className="" style={{width: "-webkit-fill-available", height: "45em", _border: "1px solid yellow"}}>
 						{state.question ? (
-							<QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer}></QuestionPanel>
+							<QuestionPanel question={state.question} question_answers={state.question_answers || []} game_status={game_status} answer_from_host={state.answer_from_host} onSelectAnswer={this.handleSelectAnswer} selected_answer={selected_answer}></QuestionPanel>
 						) : (
 							<div style={{height: "-webkit-fill-available", fontSize: "5em", textAlign: "center"}}>
 								{/* WELCOME!<div style={{display: "block", fontSize: ".5em", visibility: "hidden"}}>1</div>
