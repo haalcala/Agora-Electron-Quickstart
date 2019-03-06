@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'k70gvpL0f';
+let GAME_ID = 'tpwKBIw-q';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -888,9 +888,9 @@ export default class App extends Component {
     handleSendNextQuestion = async () => {
         const {state, signal} = this;
 
-        await this.handleReceiveQuestionFromHost(state.next_question, state.next_question_answers);
+        await this.handleReceiveQuestionFromHost(state.next_question, [state.next_question_answers]);
 
-        await this.setChannelAttribute('question', {question: state.next_question, question_answers: state.next_question_answers});
+        await this.setChannelAttribute('question', {question: state.next_question, question_answers: [state.next_question_answers]});
     };
 
     handleSendQuestionAnswer = async () => {
@@ -912,7 +912,7 @@ export default class App extends Component {
 
 	render() {
         console.log("App.render::");
-        
+
         const { state } = this;
         const { game_status } = state;
 

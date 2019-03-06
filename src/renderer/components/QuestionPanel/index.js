@@ -15,9 +15,7 @@ class QuestionPanel extends React.Component {
 		super();
 		
         this.state.game_status = props.game_status;
-        
-        this.state.options = props.question_answers;
-        this.state.question = props.question;
+
 
         console.log('QuestionPanel.constructor:: props', props);
 	}
@@ -36,9 +34,8 @@ class QuestionPanel extends React.Component {
 
 	render() {
         console.log('QuestionPanel.render::');
-        
-        const {question, options, selected_answer} = this.state;
-        const {answer_from_host} = this.props;
+
+        const {answer_from_host, question, question_answers, selected_answer} = this.props;
 
 		return (
 			<div className="card" style={{ border: "1px solid red", width: "100%", height: "100%", padding: "1em", height: "-webkit-fill-available"}}>
@@ -55,7 +52,7 @@ class QuestionPanel extends React.Component {
 						<div style={{margin: "1em"}}>
 							{_.times(4).map(i => {
 								return (
-                                    <AnswerItem key={i} selected_answer={selected_answer} answer_from_host={answer_from_host} i={i} option={options[i]} selectAnswer={this.selectAnswer}></AnswerItem>
+                                    <AnswerItem key={i} selected_answer={selected_answer} answer_from_host={answer_from_host} i={i} option={question_answers[i]} selectAnswer={this.selectAnswer}></AnswerItem>
 								);
 							})}
 						</div>
