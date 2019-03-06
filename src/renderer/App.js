@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'kh6yxbhX7';
+let GAME_ID = 'H1VKTB3Dy';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -906,7 +906,7 @@ export default class App extends Component {
     handleSendQuestionAnswer = async () => {
         const {state} = this;
 
-        if (!state.selected_answer) {
+        if (!(state.selected_answer >= 0)) {
             return console.log('Please select answer');
         }
 
