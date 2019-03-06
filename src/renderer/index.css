@@ -23,7 +23,8 @@ html, body {
   margin-left: auto;
   margin-right: auto;
   margin: auto;
-  display: block
+  display: block;
+  padding: 3px;
 }
 
 .player-icon {
@@ -37,7 +38,6 @@ html, body {
   background: #CCCCCC;
   overflow: hidden;
   vertical-align: middle;
-  padding: 3px;
 }
 
 .chat-box {
