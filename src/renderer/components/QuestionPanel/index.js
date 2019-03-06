@@ -35,9 +35,7 @@ class QuestionPanel extends React.Component {
 	render() {
         console.log('QuestionPanel.render::');
 
-        const {selected_answer} = this.state;
-
-        const {answer_from_host, question, question_answers} = this.props;
+        const {answer_from_host, question, question_answers, selected_answer} = this.props;
 
 		return (
 			<div className="card" style={{ border: "1px solid red", width: "100%", height: "100%", padding: "1em", height: "-webkit-fill-available"}}>

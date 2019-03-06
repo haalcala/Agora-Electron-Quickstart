@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'PJx9GOHlY';
+let GAME_ID = 'cE8yHaqUa';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -151,19 +151,17 @@ export default class App extends Component {
 			console.log('game_status.state', game_status.state);
 
 			if (game_status.host_player_id === PLAYER_ID) {
-				if (game_status.state === GAME_STATUS_WAIT_FOR_PLAYERS) {
-					let next_player;
+                let next_player;
 
-					_.times(3).map(i => {
-						if (!next_player && !game_status['player' + (i + 1) + '_player_id']) {
-							next_player = game_status['player' + (i + 1) + '_player_id'] = account;
-						}
-					});
+                _.times(3).map(i => {
+                    if (!next_player && !game_status['player' + (i + 1) + '_player_id']) {
+                        next_player = game_status['player' + (i + 1) + '_player_id'] = account;
+                    }
+                });
 
-					console.log('next_player', next_player);
+                console.log('next_player', next_player);
 
-					await this.setGameStatus();
-				}
+                next_player && await this.setGameStatus();        
 			}
 		});
 
@@ -870,7 +868,7 @@ export default class App extends Component {
     handleSelectAnswer = async (answer) => {
         const {state, signal} = this;
 
-        state.selected_answer = answer;
+        this.setState({selected_answer : answer});
 
         if (state.quizRole === QUIZ_ROLE_PLAYER) {
             await signal.sendMessage(state.game_status.host_player_id, "answer,"+answer);
@@ -904,6 +902,8 @@ export default class App extends Component {
         game_status.answer = "";
 
         await this.setGameStatus();
+
+        this.setState({selected_answer: ""});
     };
 
     handleSendQuestionAnswer = async () => {
