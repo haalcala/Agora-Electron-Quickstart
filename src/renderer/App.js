@@ -189,10 +189,10 @@ export default class App extends Component {
                 state.game_status = game_status;
         
                 if (!state.video_stream_id && state.game_role) {
-                    // this.handleJoin();
+                    this.handleJoin();
                 }
 
-                // this.setupVideoPanels();
+                this.setupVideoPanels();
 
                 const new_state = {};
 
@@ -232,7 +232,7 @@ export default class App extends Component {
 			state.video_stream_id = uid;
 
 			if (state.quizRole === QUIZ_ROLE_HOST) {
-				state.game_status.host_video_stream_id = uid;
+				game_status.host_video_stream_id = uid;
 
 				this.setupVideoPanels();
             }
@@ -671,11 +671,9 @@ export default class App extends Component {
 
             console.log('Created a new game successfully.');
 
-            channel.channelClearAttr(async () => {
-                await this.setGameStatus();
-    
-                this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
-            });
+            await this.setGameStatus();
+
+            this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_HOST, GAME_ID, channel });
 		}
 		else {
 			console.log('ERROR: Channel', GAME_ID, 'is not empty or owned by someone else.');
@@ -742,7 +740,7 @@ export default class App extends Component {
 
                         this.setState({ quizIsOn: true, quizRole: QUIZ_ROLE_PLAYER, GAME_ID, current_state: `Joined and awaiting quiz start from host.` });
 
-                        // this.handleJoin();
+                        this.handleJoin();
 
                         await this.setupVideoPanels();
                     }
