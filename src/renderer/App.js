@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'ReF5Sokbw';
+let GAME_ID = 'kh6yxbhX7';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -198,7 +198,7 @@ export default class App extends Component {
 
                 if (game_status.questionId != state.questionId) {
                     new_state.answer_from_host = ""; 
-                    new_state.selected_answer = "";
+                    delete new_state.selected_answer;
                 }
 
                 ['question', 'question_answers'].map(prop => {
@@ -726,10 +726,7 @@ export default class App extends Component {
                         }
                     });
 
-                    if (state.game_status && state.game_status.state === GAME_STATUS_STARTED) {
-                        reason = "Game already started";
-                    }
-                    else if (state.game_status && state.game_status.state === GAME_STATUS_ENDED) {
+                    if (state.game_status && state.game_status.state === GAME_STATUS_ENDED) {
                         reason = "Game already ended";
                     }
                     else if (player_count === 3) {
@@ -867,12 +864,12 @@ export default class App extends Component {
     
     handleSelectAnswer = async (answer) => {
         const {state, signal} = this;
-
-        this.setState({selected_answer : answer});
-
+    
         if (state.quizRole === QUIZ_ROLE_PLAYER) {
             await signal.sendMessage(state.game_status.host_player_id, "answer,"+answer);
         }
+
+        this.setState({selected_answer : answer});
     };
 
     handleSetQuestion = async (e) => {
@@ -899,11 +896,11 @@ export default class App extends Component {
         game_status.questionId = shortid.generate();
         game_status.question = state.next_question;
         game_status.question_answers = [...state.next_question_answers];
-        game_status.answer = "";
+        delete game_status.answer;
 
         await this.setGameStatus();
 
-        this.setState({selected_answer: ""});
+        this.setState({selected_answer: null});
     };
 
     handleSendQuestionAnswer = async () => {
