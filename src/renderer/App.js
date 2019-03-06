@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'H1VKTB3Dy';
+let GAME_ID = 'yQ5_CWmUQ';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -1241,6 +1241,12 @@ class Window extends Component {
             }            
         }, 100);
 
+        let display_name = "...";
+
+        if (this.props.player_id) {
+            display_name = this.props.game_role.charAt(0).toUpperCase() + this.props.game_role.slice(1) + (player_id === PLAYER_ID ? " (ME)": "");
+        }
+
 		return (
 			<div className="window-item box" style={{ padding: ".2rem", border: "1px solid red" }} haa-trace={this.props.harold_trace}>
                 {this.props.uid ? (
@@ -1248,7 +1254,7 @@ class Window extends Component {
                 ) : (
                     <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto"}} src={require('../player.jpg')} />
                 )}
-                <div className="game_role">{this.props.game_role.charAt(0).toUpperCase() + this.props.game_role.slice(1) + (player_id === PLAYER_ID ? " (ME)": "")}</div>
+                <div className="game_role">{display_name}</div>
 			</div>
 		)
 	}
