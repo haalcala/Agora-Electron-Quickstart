@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'n13jVCLP-';
+let GAME_ID = 'Le_RvWyLG';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -196,7 +196,20 @@ export default class App extends Component {
 
                 // this.setupVideoPanels();
 
-                this.setState({});
+                const new_state = {};
+
+                if (game_status.questionId != state.questionId) {
+                    new_state.answer_from_host = ""; 
+                    new_state.selected_answer = "";
+                }
+
+                ['question', 'question_answers'].map(prop => {
+                    new_state[prop] = game_status[prop];
+                });
+
+                new_state.answer_from_host = game_status.answer;
+
+                this.setState(new_state);
             }
             else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
                 const { game_status } = state;
@@ -209,14 +222,6 @@ export default class App extends Component {
                 this.setGameStatus();
 
                 this.setupVideoPanels();
-            }
-            else if (key === "question") {
-                const {question, question_answers} = val;
-
-                this.setState({question, question_answers, answer_from_host: "", answer_from_host: "", selected_answer: ""});
-            }
-            else if (key === "question_answer") {
-                this.setState({answer_from_host: val});
             }
 		});
 
@@ -574,7 +579,9 @@ export default class App extends Component {
 	setGameStatus = async () => {
 		const { state, signal } = this;
 
-		const { game_status } = state;
+        const { game_status } = state;
+        
+        game_status.requestId = shortid.generate();
 
 		let result = await this.setChannelAttribute('game_status', JSON.stringify(game_status));
 
@@ -890,7 +897,10 @@ export default class App extends Component {
 
         await this.handleReceiveQuestionFromHost(state.next_question, [...state.next_question_answers]);
 
-        await this.setChannelAttribute('question', {question: state.next_question, question_answers: [...state.next_question_answers]});
+        state.game_status.question = state.next_question;
+        state.game_status.question_answers = [...state.next_question_answers];
+
+        await this.setGameStatus();
     };
 
     handleSendQuestionAnswer = async () => {
@@ -900,7 +910,9 @@ export default class App extends Component {
             return console.log('Please select answer');
         }
 
-        await this.setChannelAttribute('question_answer', this.state.selected_answer);
+        state.game_status.answer = state.selected_answer;
+
+        await this.setGameStatus();
     };
 
     handleReceiveQuestionFromHost = async (question, question_answers) => {
