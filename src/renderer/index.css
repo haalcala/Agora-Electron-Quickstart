@@ -37,6 +37,7 @@ html, body {
   background: #CCCCCC;
   overflow: hidden;
   vertical-align: middle;
+  padding: 3px;
 }
 
 .chat-box {
