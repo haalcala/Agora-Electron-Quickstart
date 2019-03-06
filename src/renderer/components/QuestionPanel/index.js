@@ -28,8 +28,6 @@ class QuestionPanel extends React.Component {
         console.log(answer);
         
         this.props.onSelectAnswer(answer)
-
-		this.setState({selected_answer : answer});
 	}
 
 	render() {
