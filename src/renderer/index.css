@@ -13,15 +13,17 @@ html, body {
 .window-container {
   display: grid!important;
   grid: repeat(2, 50%) / repeat(4, 33%);
-  padding: .1rem;
+  /* padding: .1rem; */
   height: 23em;
 }
 
 .window-item {
-  width: 220px;
+  width: -webkit-fill-available;
   height: 240px;
   margin-left: auto;
-  margin-right: auto
+  margin-right: auto;
+  margin: auto;
+  display: block
 }
 
 .player-icon {
@@ -34,9 +36,7 @@ html, body {
   height: 100%;
   background: #CCCCCC;
   overflow: hidden;
-  /* background-repeat:no-repeat; */
   vertical-align: middle;
-  /* background-image: url('player.jpg') */
 }
 
 .chat-box {

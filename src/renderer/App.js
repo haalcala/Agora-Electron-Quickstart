@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'cKruEPOx4';
+let GAME_ID = 'B1ELwkheq';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -1246,11 +1246,11 @@ class Window extends Component {
         }
 
 		return (
-			<div className="window-item box" style={{ padding: ".2rem", border: "1px solid red" }} haa-trace={this.props.harold_trace}>
+			<div className="window-item box" style={{ border: "1px solid red" }} haa-trace={this.props.harold_trace}>
                 {this.props.uid ? (
                     <div className="video-item is-fluid" id={'video-' + this.props.game_role}></div>
                 ) : (
-                    <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto"}} src={require('../player.jpg')} />
+                    <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto", display: "block"}} src={require('../player.jpg')} />
                 )}
                 <div className="game_role">{display_name}</div>
 			</div>
