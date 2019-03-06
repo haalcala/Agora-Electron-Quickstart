@@ -43,10 +43,14 @@ class QuestionPanel extends React.Component {
 							<h1 style={{textAlign: "center"}}>
 								{question}
 							</h1>
-							<h1>Answer:</h1>
-							<h1 style={{textAlign: "left", textDecoration: "underline", marginLeft: "3em"}}>
-								{`${'ABCD'.charAt(answer_from_host)}. ${question_answers[answer_from_host]}`}
-							</h1>
+                            {answer_from_host ? (
+                                <div>
+                                    <h1>Answer:</h1>
+                                    <h1 style={{textAlign: "left", textDecoration: "underline", marginLeft: "3em"}}>
+                                        {`${'ABCD'.charAt(answer_from_host)}. ${question_answers[answer_from_host]}`}
+                                    </h1>
+                                </div>
+                            ) : ""}
 						</div>
 					</div>
 					<div style={{visibility: "hidden"}}>1</div>
