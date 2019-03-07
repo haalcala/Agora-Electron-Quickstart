@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'KIEvkXo3s';
+let GAME_ID = 'rHSd11d53';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -954,6 +954,14 @@ export default class App extends Component {
         game_status.question_answers = [...state.next_question_answers];
         delete game_status.answer;
 
+        _.times(3).map(i => {
+            let player_key = 'player' + i;
+
+            delete game_status[`${player_key}_correct_answer`];
+            delete state[`${player_key}_answer`];
+            delete state[`${player_key}_answered`];
+        });
+
         await this.setGameStatus();
 
         this.setState({selected_answer: null});
@@ -967,6 +975,12 @@ export default class App extends Component {
         }
 
         state.game_status.answer = state.selected_answer;
+
+        _.times(3).map(i => {
+            let player_key = 'player' + i;
+
+            state.game_status[`${player_key}_correct_answer`] = state[`${player_key}_answer`] === state.selected_answer;
+        });
 
         await this.setGameStatus();
     };
@@ -1213,18 +1227,22 @@ export default class App extends Component {
 						{state.quizIsOn || state.quizRole === QUIZ_ROLE_AUDIENCE ? (
 							<div style={{height: "250px", animationName: "example", animationDuration: "2s", _border: "1px dashed red", overflow: "hidden"}}>
 								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
-									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
-                                        <Window 
-                                            harold_trace="1111" 
-                                            key={key} 
-                                            game_role={item} 
-                                            uid={state.game_status[`${item}_video_stream_id`]} 
-                                            rtcEngine={this.rtcEngine} 
-                                            player_id={state.game_status[`${item}_player_id`]} 
-                                            role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'} 
-                                            answer={game_role === QUIZ_ROLE_HOST ? (state[item + '_answer'] >= 0 && 'ABCD'.charAt(state[item + '_answer'])) : (game_status[item + "_answered"] ? "👌" : "")}
-                                        />
-									))}
+									{_.times(4).map((item, key) => {
+                                        let player_key = ['host', 'player1', 'player2', 'player3'][item]; 
+                                        
+                                        return (
+                                            <Window 
+                                                harold_trace="1111" 
+                                                key={key} 
+                                                game_role={player_key} 
+                                                uid={game_status[`${player_key}_video_stream_id`]} 
+                                                rtcEngine={this.rtcEngine} 
+                                                player_id={game_status[`${player_key}_player_id`]} 
+                                                role={game_status[`${player_key}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'} 
+                                                answer={game_role === QUIZ_ROLE_HOST ? (state[player_key + '_answer'] >= 0 && 'ABCD'.charAt(state[player_key + '_answer'])) :  (game_status[player_key + "_answered"] ? (!state.answer_from_host ? "👌🏻" : (game_status[`${player_key}_correct_answer`] ? "👍🏻" : (game_status[`${player_key}_player_id`] ? "👎🏻" : ""))) : "")}
+                                            />
+                                        )
+                                    })}
 
 									{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
 
