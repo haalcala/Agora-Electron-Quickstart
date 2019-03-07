@@ -76,7 +76,9 @@ export default class App extends Component {
 
 			let signal = this.signal = new SignalingClient(APP_ID);
 
-			// let signal_session = this.signal_session = await signal.login(PLAYER_ID);
+            await signal.login(PLAYER_ID);
+    
+            // let signal_session = this.signal_session = await signal.login(PLAYER_ID);
 
 			// console.log("signal", signal);
 			// console.log("signal_session", signal_session);
@@ -93,7 +95,7 @@ export default class App extends Component {
 
 		console.log('signal', signal);
 
-		signal.sessionEmitter.on('onMessageInstantReceive', (account, uid, msg) => {
+		signal.sessionEmitter.on('onMessageInstantReceive', async (account, uid, msg) => {
 			console.log('---===>>> signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
 
             // this.onReceiveMessage(account, msg, 'instant');
@@ -105,14 +107,31 @@ export default class App extends Component {
 
             console.log('state', state, 'command', command, 'val', val);
 
-            if (command === 'answer') {
-                _.times(4).map(i => {
-                    if (game_status[`player${i+1}_player_id`] === account) {
-                        state[`player${i+1}_answer`] = val;
-
-                        console.log(`player${i+1}_answer`, val);
-                    }
-                });
+            if (state.quizRole === QUIZ_ROLE_HOST) {
+                if (command === 'answer') {
+                    _.times(4).map(i => {
+                        if (game_status[`player${i+1}_player_id`] === account) {
+                            state[`player${i+1}_answer`] = val;
+    
+                            console.log(`player${i+1}_answer`, val);
+                        }
+                    });
+                }
+                else if (command === "assign_player") {
+                    if (game_status.host_player_id === PLAYER_ID) {
+                        let next_player;
+        
+                        _.times(3).map(i => {
+                            if (!next_player && !game_status['player' + (i + 1) + '_player_id']) {
+                                next_player = game_status['player' + (i + 1) + '_player_id'] = account;
+                            }
+                        });
+        
+                        console.log('next_player', next_player);
+        
+                        next_player && await this.setGameStatus();        
+                    }        
+                }
             }
 		});
 		signal.channelEmitter.on('onMessageChannelReceive', (account, uid, msg) => {
@@ -148,21 +167,10 @@ export default class App extends Component {
 			const { state } = this;
 			const { game_status } = state;
 
-			console.log('game_status.state', game_status.state);
+			// console.log('game_status.state', game_status.state);
 
-			if (game_status.host_player_id === PLAYER_ID) {
-                let next_player;
-
-                _.times(3).map(i => {
-                    if (!next_player && !game_status['player' + (i + 1) + '_player_id']) {
-                        next_player = game_status['player' + (i + 1) + '_player_id'] = account;
-                    }
-                });
-
-                console.log('next_player', next_player);
-
-                next_player && await this.setGameStatus();        
-			}
+            
+            
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
@@ -397,7 +405,7 @@ export default class App extends Component {
 
 		signal.leave();
 
-        signal.logout();
+        // signal.logout();
         
         // this.signal = null;
 	}
@@ -559,14 +567,14 @@ export default class App extends Component {
 			return this.setState({ quizIsOn: false });
 		}
 
-        await signal.login(PLAYER_ID);
+        // await signal.login(PLAYER_ID);
 
 		console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
 
-		if (quizRole == QUIZ_ROLE_HOST) {
+		if (quizRole === QUIZ_ROLE_HOST) {
 			await this.startNewGame();
 		}
-		else if (quizRole == QUIZ_ROLE_PLAYER) {
+		else if (quizRole === QUIZ_ROLE_PLAYER || quizRole === QUIZ_ROLE_AUDIENCE) {
 			await this.joinGame();
 		}
 		else {
@@ -698,15 +706,15 @@ export default class App extends Component {
         try {
             const channel = await signal.join(GAME_ID);
 
-            this.setState({ channel });
+            await signal.sendMessage(state.game_status.host_player_id, "assign_player");
 
             console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
-
+            
             let start = new Date();
-
+            
             let game_role, reason;
-
-            this.setState({current_state: "Joining game ... Please wait."});
+                        
+            this.setState({channel, current_state: "Joining game ... Please wait."});
 
             let timer_id = setInterval(async () => {
                 const {state} = this;
@@ -1152,7 +1160,7 @@ export default class App extends Component {
 								}
 							})()}
 						</div>
-						{state.quizIsOn ? (
+						{state.quizIsOn || state.quizRole === QUIZ_ROLE_AUDIENCE ? (
 							<div style={{height: "250px", animationName: "example", animationDuration: "2s", _border: "1px dashed red", overflow: "hidden"}}>
 								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
 									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
@@ -1217,8 +1225,8 @@ class Window extends Component {
         console.log('Window.render:: props', this.props, 'state', this.state);
 
         setTimeout(() => {
-            if (this.props.uid) {
-                // this.state.uid = this.props.uid;
+            if (this.props.uid && this.props.uid !== this.state.uid) {
+                this.state.uid = this.props.uid;
     
                 let dom = document.querySelector(`#video-${this.props.game_role}`);
     
@@ -1250,7 +1258,7 @@ class Window extends Component {
                 {this.props.uid ? (
                     <div className="video-item is-fluid" id={'video-' + this.props.game_role}></div>
                 ) : (
-                    <img className="player-icon" style={{ verticalAlign: "middle", marginLeft: "auto", marginRight: "auto", display: "block"}} src={require('../player.jpg')} />
+                    <img className="player-icon" style={{ verticalAlign: "middle", magin: "auto", height: "-webkit-fill-available", display: "block"}} src={require('../player.jpg')} />
                 )}
                 <div className="game_role">{display_name}</div>
 			</div>
