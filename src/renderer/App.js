@@ -118,6 +118,8 @@ export default class App extends Component {
                     _.times(4).map(i => {
                         if (game_status[`player${i+1}_player_id`] === account) {
                             state[`player${i+1}_answer`] = val;
+
+                            game_status[`player${i+1}_answered`] = true;
     
                             console.log(`player${i+1}_answer`, val);
                         }
@@ -910,6 +912,10 @@ export default class App extends Component {
     
     handleSelectAnswer = async (answer) => {
         const {state, signal} = this;
+
+        if (state.quizRole === QUIZ_ROLE_AUDIENCE) {
+            return; // audience are not allowed to select answer
+        }
     
         if (state.quizRole === QUIZ_ROLE_PLAYER) {
             await signal.sendMessage(state.game_status.host_player_id, "answer,"+answer);

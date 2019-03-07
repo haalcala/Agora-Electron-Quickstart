@@ -38,7 +38,7 @@ class QuestionPanel extends React.Component {
 		return (
 			<div className="card" style={{ border: "1px solid red", width: "100%", height: "100%", padding: "1em", height: "-webkit-fill-available"}}>
 					<div className="card" style={{border: "1px solid green", height: "-webkit-fill-available"}}>
-						<div className="card" style={{width: "40em", margin: "auto", display: "block"}}>
+						<div className="card" style={{width: "50em", margin: "auto", display: "block"}}>
 							<h1>Question:</h1>
 							<h1 style={{textAlign: "center"}}>
 								{question}
