@@ -72,7 +72,7 @@ class AnswerItem extends React.Component {
     render() {
         const {selected_answer, answer_from_host, i, option, selectAnswer} = this.props;
 
-        console.log("selected_answer", selected_answer, "answer_from_host", answer_from_host, "i", i, "option", option, "selectAnswer", selectAnswer);
+        // console.log("selected_answer", selected_answer, "answer_from_host", answer_from_host, "i", i, "option", option, "selectAnswer", selectAnswer);
 
         return (
             <div className={"column answer-item is-link" + (selected_answer == i ? " selected": "")} onClick={() => selectAnswer(i)} >
