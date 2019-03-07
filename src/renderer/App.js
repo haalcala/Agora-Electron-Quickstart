@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'o5aHzNYqh';
+let GAME_ID = 'X734nbgIn';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -569,13 +569,13 @@ export default class App extends Component {
 
         // await signal.login(PLAYER_ID);
 
-		console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
-
+        console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
+        
 		if (quizRole === QUIZ_ROLE_HOST) {
 			await this.startNewGame();
 		}
 		else if (quizRole === QUIZ_ROLE_PLAYER || quizRole === QUIZ_ROLE_AUDIENCE) {
-			await this.joinGame();
+			await this.joinGame(quizRole);
 		}
 		else {
 			console.log('ERROR: Unknown quizRole', quizRole);
@@ -688,7 +688,7 @@ export default class App extends Component {
 		}
 	}
 
-	joinGame = async () => {
+	joinGame = async (quizRole) => {
         const { state, signal } = this;
         
         console.log('joinGame:: state', state);
@@ -706,8 +706,6 @@ export default class App extends Component {
         try {
             const channel = await signal.join(GAME_ID);
 
-            await signal.sendMessage(state.game_status.host_player_id, "assign_player");
-
             console.log('=-=-=-=-=-=-=-=-=-=-=-=- channel', channel);
             
             let start = new Date();
@@ -716,10 +714,21 @@ export default class App extends Component {
                         
             this.setState({channel, current_state: "Joining game ... Please wait."});
 
+            if (quizRole === QUIZ_ROLE_PLAYER) {
+                await signal.sendMessage(state.game_status.host_player_id, "assign_player");
+            }
+            else if (quizRole === QUIZ_ROLE_AUDIENCE) {
+                this.setState({ quizIsOn: true, quizRole, GAME_ID });
+
+                this.handleJoin();
+
+                return;
+            }
+
             let timer_id = setInterval(async () => {
                 const {state} = this;
 
-                if (state.game_status) {
+                if (state.game_role === QUIZ_ROLE_PLAYER && state.game_status) {
                     let player_count = 0;
 
                     _.times(4).map(i => {
@@ -739,9 +748,12 @@ export default class App extends Component {
                         reason = "Game is full";
                     }
                 }
+                else if (state.game_role === QUIZ_ROLE_AUDIENCE) {
+                    game_role = "Audience."
+                }
                 
                 if (reason || game_role || (new Date() - start) >= 10000) {
-                    console.log('joinGame:: state.game_status', state.game_status);
+                    console.log('joinGame:: state.game_status', state.game_status, 'game_role', game_role);
 
                     if (game_role) {
                         console.log('Successfully joined game as', game_role);
