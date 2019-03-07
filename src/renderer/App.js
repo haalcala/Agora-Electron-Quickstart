@@ -578,7 +578,7 @@ export default class App extends Component {
 		if (state.quizIsOn) {
 			this.handleLeave();
 
-			return this.setState({ quizIsOn: false, quizRole: null, game_role: null, game_status: null });
+			return this.setState({ quizIsOn: false, quizRole: null, game_role: null, game_status: null, current_state: null });
 		}
 
         // await signal.login(PLAYER_ID);
