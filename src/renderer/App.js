@@ -132,6 +132,8 @@ export default class App extends Component {
                         _.times(3).map(i => {
                             if (!next_player && !game_status['player' + (i + 1) + '_player_id']) {
                                 next_player = game_status['player' + (i + 1) + '_player_id'] = account;
+
+                                delete game_status[`player${i+1}_answered`];
                             }
                         });
         
