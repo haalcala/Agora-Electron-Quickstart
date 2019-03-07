@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'X734nbgIn';
+let GAME_ID = 'qHxdz8EC3';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -171,7 +171,7 @@ export default class App extends Component {
 
 			// console.log('game_status.state', game_status.state);
 
-            await signal.sendMessage(account, {game_status});
+            state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && await signal.sendMessage(account, {game_status});
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
