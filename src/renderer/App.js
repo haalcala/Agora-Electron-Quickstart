@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'EiMraI8Pa';
+let GAME_ID = 'IS6sqKr4n';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -76,7 +76,7 @@ export default class App extends Component {
 
 			let signal = this.signal = new SignalingClient(APP_ID);
 
-            await signal.login(PLAYER_ID);
+            // await signal.login(PLAYER_ID);
     
             // let signal_session = this.signal_session = await signal.login(PLAYER_ID);
 
@@ -148,69 +148,11 @@ export default class App extends Component {
             }
 		});
 		signal.channelEmitter.on('onMessageChannelReceive', (account, uid, msg) => {
-            if (account === PLAYER_ID) {
-                return; // ignore own message
-            }
-
 			console.log('---===>>> signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
 
-            if (msg.charAt(0) === "{" && msg.charAt(msg.length-1) === "}") {
-                msg = JSON.parse(msg);
-            }
-
-            console.log('---- msg', msg, typeof(msg));
-            
-			const { state } = this;
-            const { game_status, quizRole } = state;
-
-            const [command, val] = typeof(msg) === "string" && msg.split(",") || [];
-
-            console.log('state', state, 'command', command, 'val', val);
-
-            if (command === 'game_status') {
-                const game_status = val = JSON.parse(val);
-    
-                ['host', 'player1', 'player2', 'player3'].map(async game_role => {
-                    if (game_status[game_role + '_player_id'] == PLAYER_ID) {
-                        state.game_role = game_role;
-                    }
-                });
-
-                state.game_status = game_status;
-        
-                if (!state.video_stream_id && state.game_role) {
-                    this.handleJoin();
-                }
-
-                this.setupVideoPanels();
-
-                const new_state = {};
-
-                if (game_status.questionId != state.questionId) {
-                    new_state.answer_from_host = ""; 
-                    delete new_state.selected_answer;
-                }
-
-                ['question', 'question_answers'].map(prop => {
-                    new_state[prop] = game_status[prop];
-                });
-
-                new_state.answer_from_host = game_status.answer;
-
-                this.setState(new_state);
-            }
-            else if (command === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
-                const { game_status } = state;
-                const [game_role, video_stream_id] = val.split(',');
-
-                game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
-
-                delete state[`${game_role}_video_stream_id`];
-
-                this.setGameStatus();
-
-                this.setupVideoPanels();
-            }
+			// if (account !== signal.account) {
+			//     this.onReceiveMessage(signal.channel.name, msg, 'channel');
+			// }
 		});
 
 		signal.channelEmitter.on('onChannelUserLeaved', (account, uid) => {
@@ -252,9 +194,55 @@ export default class App extends Component {
                 return;
             }
 
+
 			const { state } = this;
 
-            // console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
+            console.log('signal.channelEmitter.on(\'onChannelAttrUpdated\':: state', state);
+            
+            if (key === 'game_status') {
+                const game_status = val = JSON.parse(val);
+    
+                ['host', 'player1', 'player2', 'player3'].map(async game_role => {
+                    if (game_status[game_role + '_player_id'] == PLAYER_ID) {
+                        state.game_role = game_role;
+                    }
+                });
+
+                state.game_status = game_status;
+        
+                if (!state.video_stream_id && state.game_role) {
+                    this.handleJoin();
+                }
+
+                this.setupVideoPanels();
+
+                const new_state = {};
+
+                if (game_status.questionId != state.questionId) {
+                    new_state.answer_from_host = ""; 
+                    delete new_state.selected_answer;
+                }
+
+                ['question', 'question_answers'].map(prop => {
+                    new_state[prop] = game_status[prop];
+                });
+
+                new_state.answer_from_host = game_status.answer;
+
+                this.setState(new_state);
+            }
+            else if (key === 'video_stream_id' && state.quizRole === QUIZ_ROLE_HOST) {
+                const { game_status } = state;
+                const [game_role, video_stream_id] = val.split(',');
+
+                game_status[`${game_role}_video_stream_id`] = parseInt(video_stream_id);
+
+                delete state[`${game_role}_video_stream_id`];
+
+                this.setGameStatus();
+
+                this.setupVideoPanels();
+            }
 		});
 
 		this.rtcEngine.on('joinedchannel', (channel, uid, elapsed) => {
@@ -433,7 +421,7 @@ export default class App extends Component {
 
 		signal.leave();
 
-        // signal.logout();
+        signal.logout();
         
         // this.signal = null;
 	}
@@ -595,14 +583,12 @@ export default class App extends Component {
 			return this.setState({ quizIsOn: false, quizRole: null, game_role: null, game_status: null, current_state: null });
 		}
 
-        // await signal.login(PLAYER_ID);
+        await signal.login(PLAYER_ID);
 
         console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
         
 		if (quizRole === QUIZ_ROLE_HOST) {
-            await this.startNewGame();
-            
-            this.handleJoin();
+			await this.startNewGame();
 		}
 		else if (quizRole === QUIZ_ROLE_PLAYER || quizRole === QUIZ_ROLE_AUDIENCE) {
 			await this.joinGame(quizRole);
@@ -619,7 +605,7 @@ export default class App extends Component {
         
         game_status.requestId = shortid.generate();
 
-		let result = await signal.broadcastMessage(['game_status', JSON.stringify(game_status)].join(","));
+		let result = await this.setChannelAttribute('game_status', JSON.stringify(game_status));
 
 		console.log('setGameStatus:: 2222 result', result);
 	};
@@ -658,8 +644,7 @@ export default class App extends Component {
 	}
 
 	setChannelAttribute = (key, val) => {
-        // return this.signal.invoke('io.agora.signal.channel_set_attr', { channel: GAME_ID, name: key, value: val });
-        return this.signal.broadcastMessage([key, JSON.stringify(val)].join(","));
+		return this.signal.invoke('io.agora.signal.channel_set_attr', { channel: GAME_ID, name: key, value: val });
     }
     
     setupNewGame = () => {
@@ -749,8 +734,6 @@ export default class App extends Component {
                 this.setState({ quizIsOn: true, quizRole, GAME_ID });
 
                 wait_for_game_status = true;
-
-                this.handleJoin();
             }
             else if (quizRole === QUIZ_ROLE_AUDIENCE) {
                 this.setState({ quizIsOn: true, quizRole, GAME_ID });
