@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'qHxdz8EC3';
+let GAME_ID = 'bzKHnp1wi';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -96,18 +96,25 @@ export default class App extends Component {
 		console.log('signal', signal);
 
 		signal.sessionEmitter.on('onMessageInstantReceive', async (account, uid, msg) => {
-			console.log('---===>>> signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg);
+			console.log('---===>>> signal.sessionEmitter.on(\'onMessageInstantReceive\':: account, uid, msg', account, uid, msg, typeof(msg));
 
             // this.onReceiveMessage(account, msg, 'instant');
+
+            if (msg.charAt(0) === "{" && msg.charAt(msg.length - 1) === "}") {
+                msg = JSON.parse(msg);
+            }
             
 			const { state } = this;
-            const { game_status } = state;
-            
-            const [command, val] = msg.split(",");
+            const { game_status, quizRole } = state;
 
+            
+            
+            const [command, val] = typeof(msg) === "string" && msg.split(",");
+
+            console.log('msg', msg);
             console.log('state', state, 'command', command, 'val', val);
 
-            if (state.quizRole === QUIZ_ROLE_HOST) {
+            if (quizRole === QUIZ_ROLE_HOST) {
                 if (command === 'answer') {
                     _.times(4).map(i => {
                         if (game_status[`player${i+1}_player_id`] === account) {
@@ -131,6 +138,11 @@ export default class App extends Component {
         
                         next_player && await this.setGameStatus();        
                     }        
+                }
+            }
+            else if (quizRole === QUIZ_ROLE_AUDIENCE) {
+                if (command === "game_status") {
+                    this.setState(JSON.parse(val))
                 }
             }
 		});
@@ -171,7 +183,7 @@ export default class App extends Component {
 
 			// console.log('game_status.state', game_status.state);
 
-            state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && await signal.sendMessage(account, {game_status});
+            state.quizIsOn && state.quizRole === QUIZ_ROLE_HOST && await signal.sendMessage(account, JSON.stringify({game_status}));
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
