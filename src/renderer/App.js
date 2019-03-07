@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'bzKHnp1wi';
+let GAME_ID = 'MS9XsSoGL';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -100,18 +100,17 @@ export default class App extends Component {
 
             // this.onReceiveMessage(account, msg, 'instant');
 
-            if (msg.charAt(0) === "{" && msg.charAt(msg.length - 1) === "}") {
+            if (msg.charAt(0) === "{" && msg.charAt(msg.length-1) === "}") {
                 msg = JSON.parse(msg);
             }
+
+            console.log('---- msg', msg, typeof(msg));
             
 			const { state } = this;
             const { game_status, quizRole } = state;
 
-            
-            
-            const [command, val] = typeof(msg) === "string" && msg.split(",");
+            const [command, val] = typeof(msg) === "string" && msg.split(",") || [];
 
-            console.log('msg', msg);
             console.log('state', state, 'command', command, 'val', val);
 
             if (quizRole === QUIZ_ROLE_HOST) {
