@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'IS6sqKr4n';
+let GAME_ID = 'EiMraI8Pa';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -151,7 +151,7 @@ export default class App extends Component {
             if (account === PLAYER_ID) {
                 return; // ignore own message
             }
-            
+
 			console.log('---===>>> signal.channelEmitter.on(\'onMessageChannelReceive\':: account, uid, msg', account, uid, msg);
 
             if (msg.charAt(0) === "{" && msg.charAt(msg.length-1) === "}") {
@@ -600,7 +600,9 @@ export default class App extends Component {
         console.log('Joining as', quizRole, 'state.quizRole', state.quizRole);
         
 		if (quizRole === QUIZ_ROLE_HOST) {
-			await this.startNewGame();
+            await this.startNewGame();
+            
+            this.handleJoin();
 		}
 		else if (quizRole === QUIZ_ROLE_PLAYER || quizRole === QUIZ_ROLE_AUDIENCE) {
 			await this.joinGame(quizRole);
