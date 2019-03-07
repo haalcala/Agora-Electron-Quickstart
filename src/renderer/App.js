@@ -152,6 +152,8 @@ export default class App extends Component {
 				_.times(3).map(n => {
 					const player_key = `player${n}_player_id`;
 					if (game_status[player_key] === account) {
+                        console.log('removing player with account id', account);
+
 						delete game_status[player_key];
 						delete game_status[`player${n}_video_stream_id`];
 					}
@@ -164,13 +166,12 @@ export default class App extends Component {
 		signal.channelEmitter.on('onChannelUserJoined', async (account, uid) => {
 			console.log('---===>>> signal.channelEmitter.on(\'onChannelUserJoined\':: account, uid', account, uid);
 
-			const { state } = this;
+			const { state, signal } = this;
 			const { game_status } = state;
 
 			// console.log('game_status.state', game_status.state);
 
-            
-            
+            await signal.sendMessage(account, {game_status});
 		});
 
 		signal.channelEmitter.on('onChannelAttrUpdated', async (key, val, op, ...args) => {
@@ -1237,7 +1238,7 @@ class Window extends Component {
         console.log('Window.render:: props', this.props, 'state', this.state);
 
         setTimeout(() => {
-            if (this.props.uid && this.props.uid !== this.state.uid) {
+            if (this.props.uid && this.props.uid !== this.state.uid && this.props.player_id) {
                 this.state.uid = this.props.uid;
     
                 let dom = document.querySelector(`#video-${this.props.game_role}`);
