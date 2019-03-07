@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'rHSd11d53';
+let GAME_ID = 'yp8h6Wy8K';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -979,7 +979,7 @@ export default class App extends Component {
         _.times(3).map(i => {
             let player_key = 'player' + i;
 
-            state.game_status[`${player_key}_correct_answer`] = state[`${player_key}_answer`] === state.selected_answer;
+            state.game_status[`${player_key}_correct_answer`] = state[`${player_key}_answer`] >= 0 && state[`${player_key}_answer`] == state.selected_answer;
         });
 
         await this.setGameStatus();
