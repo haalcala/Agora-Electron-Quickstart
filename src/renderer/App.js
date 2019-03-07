@@ -122,6 +122,8 @@ export default class App extends Component {
                             game_status[`player${i+1}_answered`] = true;
     
                             console.log(`player${i+1}_answer`, val);
+
+                            this.setState({});
                         }
                     });
                 }
@@ -980,7 +982,7 @@ export default class App extends Component {
         console.log("App.render::");
 
         const { state } = this;
-        const { game_status, selected_answer } = state;
+        const { game_status, selected_answer, game_role } = state;
 
 		let windowPicker
 
@@ -1212,7 +1214,16 @@ export default class App extends Component {
 							<div style={{height: "250px", animationName: "example", animationDuration: "2s", _border: "1px dashed red", overflow: "hidden"}}>
 								<div className="column is-three-quarters window-container" style={{columnGap: ".3em", }}>
 									{['host', 'player1', 'player2', 'player3'].map((item, key) => (
-										<Window harold_trace="1111" key={key} game_role={item} uid={state.game_status[`${item}_video_stream_id`]} rtcEngine={this.rtcEngine} player_id={state.game_status[`${item}_player_id`]} role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'}></Window>
+                                        <Window 
+                                            harold_trace="1111" 
+                                            key={key} 
+                                            game_role={item} 
+                                            uid={state.game_status[`${item}_video_stream_id`]} 
+                                            rtcEngine={this.rtcEngine} 
+                                            player_id={state.game_status[`${item}_player_id`]} 
+                                            role={state.game_status[`${item}_video_stream_id`] === state.video_stream_id ? 'local' : 'remote'} 
+                                            answer={game_role === QUIZ_ROLE_HOST ? (state[item + '_answer'] >= 0 && 'ABCD'.charAt(state[item + '_answer'])) : (game_status[item + "_answered"] ? "👌" : "")}
+                                        />
 									))}
 
 									{/* {state.local ? (<Window harold_trace="2222" uid={state.local} rtcEngine={this.rtcEngine} role="local"></Window>) : ''} */}
@@ -1268,7 +1279,7 @@ class Window extends Component {
 	// }
 
 	render() {
-        const {player_id} = this.props;
+        const {player_id, game_role, answer} = this.props;
 
         console.log('Window.render:: props', this.props, 'state', this.state);
 
@@ -1309,6 +1320,9 @@ class Window extends Component {
                     <img className="player-icon" style={{ verticalAlign: "middle", magin: "auto", height: "-webkit-fill-available", display: "block"}} src={require('../player.jpg')} />
                 )}
                 <div className="game_role">{display_name}</div>
+                {answer ? 
+                    <div className="player_answer_tab">{answer}</div>
+                : ""}
 			</div>
 		)
 	}
