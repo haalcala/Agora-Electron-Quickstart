@@ -140,8 +140,8 @@ export default class App extends Component {
                 }
             }
             else if (quizRole === QUIZ_ROLE_AUDIENCE) {
-                if (command === "game_status") {
-                    this.setState(JSON.parse(val))
+                if (msg.game_status) {
+                    this.setState({game_status: msg.game_status});
                 }
             }
 		});
@@ -407,6 +407,8 @@ export default class App extends Component {
 	}
 
 	handleLeave = () => {
+        console.log('handleLeave::');
+
 		let { rtcEngine, signal } = this;
 
 		rtcEngine.enableLocalVideo(false)
@@ -576,7 +578,7 @@ export default class App extends Component {
 		if (state.quizIsOn) {
 			this.handleLeave();
 
-			return this.setState({ quizIsOn: false });
+			return this.setState({ quizIsOn: false, quizRole: null, game_role: null, game_status: null });
 		}
 
         // await signal.login(PLAYER_ID);
