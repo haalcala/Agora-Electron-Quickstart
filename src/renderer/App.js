@@ -121,11 +121,15 @@ export default class App extends Component {
 
                             game_status[`player${i+1}_answered`] = true;
     
-                            console.log(`player${i+1}_answer`, val);
+							console.log(`player${i+1}_answer`, val);
+							
+							this.setGameStatus();
 
                             this.setState({});
                         }
-                    });
+					});
+					
+
                 }
                 else if (command === "assign_player") {
                     if (game_status.host_player_id === PLAYER_ID) {
