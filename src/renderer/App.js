@@ -26,7 +26,7 @@ const [QUIZ_ROLE_HOST, QUIZ_ROLE_PLAYER, QUIZ_ROLE_AUDIENCE, PLAYER_ID] = ['host
 
 const [GAME_STATUS_INITIALISED, GAME_STATUS_WAIT_FOR_PLAYERS, GAME_STATUS_STARTED, GAME_STATUS_ENDED] = _.times(4);
 
-let GAME_ID = 'xEqZePpLt';
+let GAME_ID = 'Wbo-OUgMQ';
 
 const QUIZ_STATUS_TEXT = ["Game Initialised", "Wating for players", "Quiz Started", 'Quiz Ended'];
 
@@ -121,11 +121,15 @@ export default class App extends Component {
 
                             game_status[`player${i+1}_answered`] = true;
     
-                            console.log(`player${i+1}_answer`, val);
+							console.log(`player${i+1}_answer`, val);
+							
+							this.setGameStatus();
 
                             this.setState({});
                         }
-                    });
+					});
+					
+
                 }
                 else if (command === "assign_player") {
                     if (game_status.host_player_id === PLAYER_ID) {
