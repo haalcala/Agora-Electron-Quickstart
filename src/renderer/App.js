@@ -11,7 +11,7 @@ import path from 'path';
 import os from 'os'
 import _ from 'lodash'
 
-import {Alert} from 'react-bootstrap'
+// import {Alert} from 'react-bootstrap'
 
 import { videoProfileList, audioProfileList, audioScenarioList, APP_ID, SHARE_ID } from '../utils/settings'
 import base64Encode from '../utils/base64'
